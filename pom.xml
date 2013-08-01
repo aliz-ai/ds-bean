@@ -1,0 +1,37 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>com.doctusoft</groupId>
+	<artifactId>ds-bean</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+	<name>ds-bean</name>
+
+	<properties>
+		<version.guava>14.0.1</version.guava>
+		<version.lombok>0.11.3</version.lombok>
+	</properties>
+
+	<dependencies>
+		<dependency>
+			<groupId>com.github.peichhorn</groupId>
+			<artifactId>lombok-pg</artifactId>
+			<version>${version.lombok}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.github.peichhorn</groupId>
+			<artifactId>lombok-pg</artifactId>
+			<version>${version.lombok}</version>
+			<classifier>runtime</classifier>
+		</dependency>
+		<dependency>
+			<groupId>com.google.guava</groupId>
+			<artifactId>guava</artifactId>
+			<version>${version.guava}</version>
+		</dependency>
+		<dependency>
+			<groupId>commons-beanutils</groupId>
+			<artifactId>commons-beanutils</artifactId>
+			<version>1.8.3</version>
+		</dependency>
+	</dependencies>
+</project>
