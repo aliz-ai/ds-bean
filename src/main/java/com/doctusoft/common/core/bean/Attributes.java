@@ -19,14 +19,6 @@ public final class Attributes {
 
 	private Attributes() {}
 
-	public static Class uncheckedForName(final String className) {
-		try {
-			return Class.forName(className);
-		} catch (ClassNotFoundException e) {
-			throw new RuntimeException(e);
-		}
-	}
-
 	public static <E, T> Attribute<E, T> of( final Class<E> parent, final String name, final Class<T> type ) {
 		checkNotNull( parent );
 		checkArgument( !Strings.isNullOrEmpty( name ) );
