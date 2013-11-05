@@ -15,10 +15,15 @@ import static com.google.common.base.Preconditions.*;
 /**
  * AttributeImpl<SubjectClass, PropertyType>
  * 
+ * @deprecated this implementation relies on reflection and apache common-beanutils.
+ *   This solution has been replaced with inline code generation using lombok-ds.
+ *   It runs faster and works with GWT.
+ * 
  * @since 3.0.0
  */
 @lombok.Getter
 @lombok.EqualsAndHashCode( of = { "parent", "name", "type" }, doNotUseGetters = true )
+@Deprecated
 public class AttributeImpl<E, T> implements Attribute<E, T> {
 
 	protected final Class<E> parent;

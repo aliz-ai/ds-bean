@@ -19,6 +19,11 @@ public final class Attributes {
 
 	private Attributes() {}
 
+	/**
+	 * @deprecated this implementation relies on {@link AttributeImpl} that uses reflection. This
+	 *   solution has been replaced with inline code generation using lombok-ds.
+	 */
+	@Deprecated
 	public static <E, T> Attribute<E, T> of( final Class<E> parent, final String name, final Class<T> type ) {
 		checkNotNull( parent );
 		checkArgument( !Strings.isNullOrEmpty( name ) );
