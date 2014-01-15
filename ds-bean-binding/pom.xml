@@ -23,17 +23,22 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>com.github.peichhorn</groupId>
-			<artifactId>lombok-pg</artifactId>
+			<groupId>com.doctusoft</groupId>
+			<artifactId>ds-bean</artifactId>
+			<version>${project.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>com.github.peichhorn</groupId>
-			<artifactId>lombok-pg</artifactId>
-			<classifier>runtime</classifier>
+			<groupId>com.doctusoft</groupId>
+			<artifactId>lombok-ds</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>com.google.guava</groupId>
 			<artifactId>guava</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<scope>test</scope>
 		</dependency>
 	</dependencies>
 

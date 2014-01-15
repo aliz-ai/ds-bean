@@ -23,13 +23,8 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>com.github.peichhorn</groupId>
-			<artifactId>lombok-pg</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>com.github.peichhorn</groupId>
-			<artifactId>lombok-pg</artifactId>
-			<classifier>runtime</classifier>
+			<groupId>com.doctusoft</groupId>
+			<artifactId>lombok-ds</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>com.google.guava</groupId>
