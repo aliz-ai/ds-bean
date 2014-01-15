@@ -33,6 +33,18 @@
 			<plugins>
 
 				<plugin>
+					<artifactId>maven-release-plugin</artifactId>
+					<version>2.4.2</version>
+					<configuration>
+						<!-- During release:perform, enable the "release" profile -->
+						<releaseProfiles>release</releaseProfiles>
+						<!-- don't upload stuff to any repository, just the local one -->
+						<goals>deploy</goals>
+						<autoVersionSubmodules>true</autoVersionSubmodules>
+					</configuration>
+				</plugin>
+
+				<plugin>
 					<artifactId>maven-compiler-plugin</artifactId>
 					<version>${version.maven.compiler.plugin}</version>
 					<configuration>
