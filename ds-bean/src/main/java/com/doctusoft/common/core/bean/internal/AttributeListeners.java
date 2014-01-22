@@ -28,7 +28,8 @@ public class AttributeListeners<T> implements Serializable {
 	
 	public void fireListeners(final T newValue) {
 		if (listeners != null) {
-			for (ValueChangeListener<T> listener : listeners) {
+			// value change listeners might remove themselves, so we prevent ConcurrentModificationExceptions by copying the list first
+			for (ValueChangeListener<T> listener : new ArrayList<ValueChangeListener<T>>(listeners)) {
 				if (listener != null) {
 					listener.valueChanged(newValue);
 				}
