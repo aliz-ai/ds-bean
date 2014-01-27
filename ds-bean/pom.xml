@@ -18,9 +18,35 @@
 			    <directory>${basedir}/src/main/java</directory>
 			</resource>
 		</resources>
+		
+		<plugins>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>license-maven-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>update-file-headers</id>
+						<goals>
+							<goal>update-file-header</goal>
+						</goals>
+						<phase>process-sources</phase>
+						<configuration>
+							<canUpdateCopyright>true</canUpdateCopyright>
+							<canUpdateDescription>true</canUpdateDescription>
+							<licenseName>apache_v2</licenseName>
+							<roots>
+								<root>src</root>
+							</roots>
+							<organizationName>Doctusoft Ltd.</organizationName>
+							<inceptionYear>2014</inceptionYear>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
 
 	</build>
-
+	
 	<dependencies>
 		<dependency>
 			<groupId>com.doctusoft</groupId>
