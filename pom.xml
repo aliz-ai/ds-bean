@@ -14,7 +14,7 @@
 
 	<properties>
 		<version.guava>14.0.1</version.guava>
-		<lombok.ds.version>0.1.2.r2</lombok.ds.version>
+		<lombok.ds.version>0.1.6</lombok.ds.version>
 
 		<version.maven.clean.plugin>2.5</version.maven.clean.plugin>
 		<version.maven.install.plugin>2.4</version.maven.install.plugin>

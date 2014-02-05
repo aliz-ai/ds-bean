@@ -1,43 +1,27 @@
-package com.doctusoft.common.core.bean.binding;
-
-/*
- * #%L
- * ds-bean-binding
- * %%
- * Copyright (C) 2014 Doctusoft Ltd.
- * %%
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- * 
- *      http://www.apache.org/licenses/LICENSE-2.0
- * 
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- * #L%
- */
-
+package com.doctusoft.common.core.bean.binding.observable;
 
 import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 
-public class TestValueBindingBuilder {
+import com.doctusoft.common.core.bean.ValueChangeListener;
+import com.doctusoft.common.core.bean.binding.Bindings;
+import com.doctusoft.common.core.bean.binding.Converter;
+import com.doctusoft.common.core.bean.binding.ValueBinding;
+
+public class TestObservedBindings {
 
 	@Test
 	public void testConstantValueBinding() {
 		String string = "hello world";
-		ValueBinding<String> binding = Bindings.on(string);
+		ObservableValueBinding<String> binding = Bindings.obs(string);
 		assertEquals(string, binding.getValue());
 	}
 
 	@Test(expected=UnsupportedOperationException.class)
 	public void testWriteConstantValueBinding() {
 		String string = "hello world";
-		ValueBinding<String> binding = Bindings.on(string);
+		ObservableValueBinding<String> binding = Bindings.obs(string);
 		binding.setValue("");
 	}
 	
@@ -45,7 +29,7 @@ public class TestValueBindingBuilder {
 	public void testSimpleAttributeValueBinding() {
 		String string = "hello world";
 		TestBean testBean = new TestBean(string);
-		ValueBinding<String> binding = Bindings.on(testBean).get(TestBean._stringValue);
+		ObservableValueBinding<String> binding = Bindings.obs(testBean).get(TestBean._stringValue);
 		assertEquals(string, binding.getValue());
 		String newvalue = "newvalue";
 		binding.setValue(newvalue);
@@ -56,8 +40,8 @@ public class TestValueBindingBuilder {
 	public void testChainedAttributeValueBinding() {
 		String string = "hello world";
 		TestContainerBean testContainerBean = new TestContainerBean(new TestBean(string));
-		ValueBinding<String> binding = Bindings
-				.on(testContainerBean)
+		ObservableValueBinding<String> binding = Bindings
+				.obs(testContainerBean)
 				.get(TestContainerBean._testBean)
 				.get(TestBean._stringValue);
 		assertEquals(string, binding.getValue());
@@ -70,8 +54,8 @@ public class TestValueBindingBuilder {
 	public void testConvertingValueBinding() {
 		String string = "1";
 		TestBean testBean = new TestBean(string);
-		ValueBinding<Integer> binding = Bindings
-					.on(testBean)
+		ObservableValueBinding<Integer> binding = Bindings
+					.obs(testBean)
 					.get(TestBean._stringValue)
 					.convert(new DummyConverter());
 		assertEquals(new Integer(1), binding.getValue());

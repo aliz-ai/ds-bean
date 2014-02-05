@@ -1,8 +1,8 @@
-package com.doctusoft.common.core.bean;
+package com.doctusoft.common.core.bean.binding.observable;
 
 /*
  * #%L
- * ds-bean
+ * ds-bean-binding
  * %%
  * Copyright (C) 2014 Doctusoft Ltd.
  * %%
@@ -21,7 +21,16 @@ package com.doctusoft.common.core.bean;
  */
 
 
-public interface ObservedAttribute<E, T> extends Attribute<E, T> {
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.ObservableAttribute;
+import lombok.Setter;
 
-	ListenerRegistration addChangeListener(E object, ValueChangeListener<T> valueChangeListener);
+@Getter @Setter
+@AllArgsConstructor
+public class TestBean {
+	
+	@ObservableAttribute
+	private String stringValue;
+
 }
