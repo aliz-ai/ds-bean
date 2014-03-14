@@ -21,9 +21,11 @@ package com.doctusoft.common.core.bean.binding;
  */
 
 
+import com.doctusoft.common.core.bean.ParametricObjectMethodReferences.ObjectMethodReference1;
 import com.doctusoft.common.core.bean.ValueChangeListener;
 import com.doctusoft.common.core.bean.binding.observable.ObservableChainedValueBindingBuilder;
 import com.doctusoft.common.core.bean.binding.observable.ObservableValueBinding;
+import com.google.common.base.Function;
 
 public class Bindings {
 	
@@ -45,16 +47,26 @@ public class Bindings {
 	 * Sets the target binding value to that of the source binding and ensures that later changes on the source binding
 	 * are also propagated to the target. 
 	 */
-	public static <T> void bind(final ObservableValueBinding<T> sourceBinding, final ValueBinding<T> targetBinding) {
+	public static <T> void bind(final ValueBinding<T> sourceBinding, final ValueBinding<T> targetBinding) {
 		// set current value
 		targetBinding.setValue(sourceBinding.getValue());
 		// listen to changes
-		sourceBinding.addValueChangeListener(new ValueChangeListener<T>() {
+		if (sourceBinding instanceof ObservableValueBinding<?>) {
+			((ObservableValueBinding<T>)sourceBinding).addValueChangeListener(new ValueChangeListener<T>() {
+				@Override
+				public void valueChanged(T value) {
+					targetBinding.setValue(value);
+				}
+			});
+		}
+	}
+
+	public static <Target, Value> Function<Target, Value> functionOf(final ObjectMethodReference1<?, Value, Target> objectMethodRef) {
+		return new Function<Target, Value>() {
 			@Override
-			public void valueChanged(T value) {
-				targetBinding.setValue(value);
+			public Value apply(Target target) {
+				return objectMethodRef.apply(target);
 			}
-		});
-		
+		};
 	}
 }

@@ -22,7 +22,10 @@ package com.doctusoft.common.core.bean;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import java.util.Map;
+
 import com.google.common.base.Function;
+import com.google.common.collect.Maps;
 
 /**
  *
@@ -34,6 +37,15 @@ public final class Attributes {
 
 	public static <E, T> Function<E, T> functionOf( final Attribute<E, T> attribute ) {
 		return new AttributeFunction<E, T>( attribute );
+	}
+
+	public static <T, Key, Value> Map<Key, Value> map(Iterable<T> elements, Attribute<? super T, Key> keyAttribute, Attribute<? super T, Value> valueAttribute) {
+		// I didn't find a way to do this properly with standard Guava methods
+		Map<Key, Value> result = Maps.newHashMap();
+		for (T element : elements) {
+			result.put(keyAttribute.getValue(element), valueAttribute.getValue(element));
+		}
+		return result;
 	}
 
 	private static class AttributeFunction<E, T> implements Function<E, T> {
