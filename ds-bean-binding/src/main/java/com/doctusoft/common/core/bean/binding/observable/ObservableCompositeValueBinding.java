@@ -32,7 +32,7 @@ public abstract class ObservableCompositeValueBinding<Source, Target> extends Co
 	
 	protected final List<ValueChangeListener<Target>> valueChangeListeners = Lists.newArrayList();
 	
-	public ObservableCompositeValueBinding(ObservableValueBinding<Source> sourceBinding) {
+	public ObservableCompositeValueBinding(ObservableValueBinding<? extends Source> sourceBinding) {
 		super(sourceBinding);
 	}
 

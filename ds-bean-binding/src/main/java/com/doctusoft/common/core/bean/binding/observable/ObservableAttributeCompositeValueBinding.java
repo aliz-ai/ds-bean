@@ -28,11 +28,11 @@ import com.doctusoft.common.core.bean.ValueChangeListener;
 public class ObservableAttributeCompositeValueBinding<Source, Target> extends ObservableCompositeValueBinding<Source, Target>
 		implements ObservableValueBinding<Target> {
 
-	private final ObservableAttribute<Source, Target> attribute;
+	private final ObservableAttribute<? super Source, Target> attribute;
 	private Source sourceValue = null;
 	private ListenerRegistration sourceValueHandler = null;
 
-	public ObservableAttributeCompositeValueBinding(ObservableValueBinding<Source> sourceBinding, ObservableAttribute<Source, Target> attribute) {
+	public ObservableAttributeCompositeValueBinding(ObservableValueBinding<? extends Source> sourceBinding, ObservableAttribute<? super Source, Target> attribute) {
 		super(sourceBinding);
 		this.attribute = attribute;
 		// if the attribute value on the source changes, we fire a change event

@@ -32,7 +32,7 @@ public class ObservableChainedValueBindingBuilder<T> extends ObservableValueBind
 		return builder;
 	}
 
-	public <Target> ObservableChainedValueBindingBuilder<Target> get(final ObservableAttribute<T, Target> attribute) {
+	public <Target> ObservableChainedValueBindingBuilder<Target> get(final ObservableAttribute<? super T, Target> attribute) {
 		ObservableChainedValueBindingBuilder<Target> builder = new ObservableChainedValueBindingBuilder<Target>();
 		builder.source = new ObservableAttributeCompositeValueBinding<T, Target>(source, attribute);
 		return builder;
