@@ -173,12 +173,12 @@
 
 	<distributionManagement>
 		<repository>
-			<id>doctusoft.releases</id>
-			<url>http://repo.doctusoft.com/nexus/content/repositories/releases</url>
+			<id>doctusoft.releases.public</id>
+			<url>http://pubrepo.doctusoft.com/nexus/content/repositories/releases</url>
 		</repository>
 		<snapshotRepository>
-			<id>doctusoft.snapshots</id>
-			<url>http://repo.doctusoft.com/nexus/content/repositories/snapshots</url>
+			<id>doctusoft.snapshots.public</id>
+			<url>http://pubrepo.doctusoft.com/nexus/content/repositories/snapshots</url>
 		</snapshotRepository>
 	</distributionManagement>
 
