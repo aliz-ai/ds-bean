@@ -50,6 +50,7 @@ public class TestValueBindingBuilder {
 		String newvalue = "newvalue";
 		binding.setValue(newvalue);
 		assertEquals(newvalue, binding.getValue());
+		assertEquals(newvalue, testBean.getStringValue());
 	}
 	
 	@Test
@@ -64,6 +65,7 @@ public class TestValueBindingBuilder {
 		String newvalue = "newvalue";
 		binding.setValue(newvalue);
 		assertEquals(newvalue, binding.getValue());
+		assertEquals(newvalue, testContainerBean.getTestBean().getStringValue());
 	}
 	
 	@Test

@@ -24,15 +24,15 @@ package com.doctusoft.common.core.bean;
  *
  * @since 3.0.0
  */
-public interface Attribute<E, T> {
+public interface Attribute<Holder, Value> {
 
-	T getValue( E instance );
+	Value getValue( Holder instance );
 
-	void setValue( E instance, T value );
+	void setValue( Holder instance, Value value );
 
-	Class<E> getParent();
+	Class<Holder> getParent();
 
-	Class<T> getType();
+	Class<Value> getType();
 
 	String getName();
 

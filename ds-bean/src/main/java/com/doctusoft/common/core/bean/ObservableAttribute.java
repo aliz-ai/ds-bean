@@ -21,7 +21,7 @@ package com.doctusoft.common.core.bean;
  */
 
 
-public interface ObservableAttribute<E, T> extends Attribute<E, T> {
+public interface ObservableAttribute<Holder, Value> extends Attribute<Holder, Value> {
 
-	ListenerRegistration addChangeListener(E object, ValueChangeListener<T> valueChangeListener);
+	ListenerRegistration addChangeListener(Holder object, ValueChangeListener<Value> valueChangeListener);
 }
