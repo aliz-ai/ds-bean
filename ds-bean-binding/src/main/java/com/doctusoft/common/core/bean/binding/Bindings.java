@@ -22,7 +22,6 @@ package com.doctusoft.common.core.bean.binding;
 
 
 import com.doctusoft.common.core.bean.ParametricObjectMethodReferences.ObjectMethodReference1;
-import com.doctusoft.common.core.bean.ValueChangeListener;
 import com.doctusoft.common.core.bean.binding.observable.ObservableChainedValueBindingBuilder;
 import com.doctusoft.common.core.bean.binding.observable.ObservableValueBinding;
 import com.google.common.base.Function;
@@ -44,21 +43,30 @@ public class Bindings {
 	}
 
 	/**
-	 * Sets the target binding value to that of the source binding and ensures that later changes on the source binding
-	 * are also propagated to the target. 
+	 * Propagates the source binding value to the target binding. If the source binding is observable,
+	 * then any change on it will be propagated to the target binding. If the target binding is also observable,
+	 * a two-way binding will be created, and changes on any side will be propagated to the other, avoiding
+	 * infinite loops by not propagating values that are already present. Values are compared with their .equals methods.
+	 * 
+	 * @return a {@link BindingRegistration} that can be used to unbind (remove propagating change listeners), if necessary
 	 */
-	public static <T> void bind(final ValueBinding<T> sourceBinding, final ValueBinding<T> targetBinding) {
+	public static <T> BindingRegistration bind(final ValueBinding<T> sourceBinding, final ValueBinding<T> targetBinding) {
 		// set current value
 		targetBinding.setValue(sourceBinding.getValue());
 		// listen to changes
-		if (sourceBinding instanceof ObservableValueBinding<?>) {
-			((ObservableValueBinding<T>)sourceBinding).addValueChangeListener(new ValueChangeListener<T>() {
-				@Override
-				public void valueChanged(T value) {
-					targetBinding.setValue(value);
-				}
-			});
+		if (sourceBinding instanceof ObservableValueBinding<?> && !(targetBinding instanceof ObservableValueBinding<?>)) {
+			return new OneWayBindingImpl<T>((ObservableValueBinding<T>) sourceBinding, targetBinding);
 		}
+		if (sourceBinding instanceof ObservableValueBinding<?> && (targetBinding instanceof ObservableValueBinding<?>)) {
+			return new TwoWayBindingImpl<T>((ObservableValueBinding<T>) sourceBinding, (ObservableValueBinding<T>) targetBinding);
+		}
+		// return an empty registration by default
+		return new BindingRegistration() {
+			@Override
+			public void unbind() {
+				// do nothing
+			}
+		};
 	}
 
 	public static <Target, Value> Function<Target, Value> functionOf(final ObjectMethodReference1<?, Value, Target> objectMethodRef) {
