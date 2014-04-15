@@ -2,7 +2,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.doctusoft</groupId>
 	<artifactId>ds-bean-parent</artifactId>
-	<version>0.1.8-SNAPSHOT</version>
+	<version>0.1.8</version>
 	<name>ds-bean-parent</name>
 	<packaging>pom</packaging>
 	
@@ -184,6 +184,6 @@
 
 	<scm>
 		<connection>scm:git:https://github.com/Doctusoft/ds-bean</connection>
-    <tag>HEAD</tag>
+    <tag>v0.1.8</tag>
   </scm>
 </project>
