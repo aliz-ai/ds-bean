@@ -22,6 +22,7 @@ package com.doctusoft.common.core.bean;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import com.google.common.base.Function;
@@ -35,10 +36,28 @@ public final class Attributes {
 
 	private Attributes() {}
 
+	/**
+	 * Create a guava {@link Function} based on the given {@link Attribute}
+	 */
 	public static <E, T> Function<E, T> functionOf( final Attribute<E, T> attribute ) {
 		return new AttributeFunction<E, T>( attribute );
 	}
 
+	/**
+	 * Creates a {@link HashMap} of the elements. The keys are determined by the keyAttribute parameter,
+	 * the values are the elements themselves. 
+	 */
+	public static <T, Key> Map<Key, T> map(Iterable<T> elements, Attribute<? super T, Key> keyAttribute) {
+		Map<Key, T> result = Maps.newHashMap();
+		for (T element : elements) {
+			result.put(keyAttribute.getValue(element), element);
+		}
+		return result;
+	}
+
+	/**
+	 * Creates a {@link HashMap} of the element attributes, using the keyAttribute and valueAttribute to extract keys and values. 
+	 */
 	public static <T, Key, Value> Map<Key, Value> map(Iterable<T> elements, Attribute<? super T, Key> keyAttribute, Attribute<? super T, Value> valueAttribute) {
 		// I didn't find a way to do this properly with standard Guava methods
 		Map<Key, Value> result = Maps.newHashMap();
