@@ -1,6 +1,7 @@
 ds-bean
 =======
 The Doctusoft Bean framework provides a basis for the techniques we liked to use at [Doctusoft Ltd](http://www.doctusoft.com), related to Java Beans (entities, DTOs or whatever). It's best used with lombok-ds, a fork of [lombok-pg](https://github.com/peichhorn/lombok-pg) to help us generate some boilerplate code.
+Check out the [Wiki](https://github.com/Doctusoft/ds-bean/wiki) for more information
 
 ##Main features
 - Bean Property Literals
@@ -20,12 +21,12 @@ public class SomeClass {
 ```
 The code above will create an
 ```java
-public static final Attribute&lt;SomeClass, String&gt; _someProperty;
+public static final Attribute<SomeClass, String> _someProperty;
 ```
 on the class.
 The `Attribute` interface provides the following methods:
 ```java
-public interface Attribute&lt;E, T&gt; {
+public interface Attribute<E, T> {
 	T getValue( E instance );
 	void setValue( E instance, T value );
 	Class<E> getParent();
@@ -42,14 +43,14 @@ Value binding relies on attribute literals described above. It's under the `ds-b
 
 ###Basic usage examples
 ```java
-ValueBindingBuilder.on(model)
+Bindings.on(model)
     .get(MyModel._task)
     .get(MyTask._assignee)
     .get(MyAssignee._name);
 ```
 Conversion:
 ```java
-ValueBindingBuilder.on(model)
+Bindings.on(model)
     .get(MyModel._task)
     .get(MyTask._dueDate)
     .convert(new BasicDateConverter())
@@ -57,11 +58,3 @@ ValueBindingBuilder.on(model)
 
 You can easily wrap and use the generic ValueBinding interface to provide bindings in the environment you are using (we are using it with JSF, Vaadin and GWT applications). We will soon release some example wrappers.
 
-Release notes
--------------
-- 0.1.3
-  - Projects restructured
-  - Value Binding added
-- 0.1.2
-  - Added `ClassMethodLiteral` and `ObjectMethodLiteral` that will be generated with `@MethodRef` in lombok-ds-0.1.2.
-  - Deprecated `Attributes` and `AttributeImpl` classes that rely on reflection and apache common beanutils. Reflection based implementation runs slower and doesn't work with GWT. In the other hand, the new anonymous class based implementation generates lots of code, but that shouldn't be a problem.
