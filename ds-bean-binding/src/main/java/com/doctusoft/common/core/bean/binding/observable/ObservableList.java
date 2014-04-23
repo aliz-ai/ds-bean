@@ -21,27 +21,42 @@ package com.doctusoft.common.core.bean.binding.observable;
  */
 
 
-import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
+import java.util.ListIterator;
+import java.util.RandomAccess;
 
 import com.doctusoft.common.core.bean.GenericListeners;
 import com.doctusoft.common.core.bean.ListenerRegistration;
+import com.google.common.collect.ForwardingList;
 import com.google.common.collect.Lists;
 
 /**
  * TODO: the iterator() should also return an observed iterator
  */
-public class ObservableList<T> extends ArrayList<T> {
+public class ObservableList<T> extends ForwardingList<T> implements RandomAccess {
 	
 	protected InsertListeners<T> insertListeners = new InsertListeners<T>();
 	protected RemoveListeners<T> removeListeners = new RemoveListeners<T>();
 	
+	/**
+	 * We use encapsulation, because subclassing can result in unexpected errors, when the ArrayList is implemented differently: for example the GWT implementation of the .remove(Object o) redirects to remove(int index),
+	 * while the JVM implementation does not. If we overwrite the methods, the listeners in GWT would fire twice: first for the originally called method and then in the redirected one. 
+	 */
+	private List<T> delegate;
+	
+	@Override
+	protected List<T> delegate() {
+		return delegate;
+	}
+	
 	public ObservableList() {
+		delegate = Lists.newArrayList();
 	}
 	
 	public ObservableList(int initialCapacity) {
-		super(initialCapacity);
+		delegate = Lists.newArrayListWithCapacity(initialCapacity);
 	}
 	
 	public ListenerRegistration addInsertListener(ListElementInsertedListener<T> listener) {
@@ -143,6 +158,21 @@ public class ObservableList<T> extends ArrayList<T> {
 		ObservableList<T> list = new ObservableList<T>();
 		list.addAll(super.subList(fromIndex, toIndex));
 		return list;
+	}
+	
+	@Override 
+	public Iterator<T> iterator() {
+		throw new UnsupportedOperationException();
+	}
+	
+	@Override 
+	public ListIterator<T> listIterator() {
+		throw new UnsupportedOperationException();
+	}
+	
+	@Override 
+	public ListIterator<T> listIterator(int index) {
+		throw new UnsupportedOperationException();
 	}
 	
 	public interface ListElementInsertedListener<T> {

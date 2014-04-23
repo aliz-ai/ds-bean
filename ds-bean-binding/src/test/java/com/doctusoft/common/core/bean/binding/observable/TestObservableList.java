@@ -119,4 +119,12 @@ public class TestObservableList {
 		sourceList.set(1, "d");
 		assertTargetList("adc");
 	}
+	
+	@Test
+	public void testClear() {
+		sourceList.addAll(ImmutableList.of("a", "b", "c"));
+		assertTargetList("abc");
+		sourceList.clear();
+		assertEquals(0, targetList.size());
+	}
 }
