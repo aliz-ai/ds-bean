@@ -25,6 +25,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.NoSuchElementException;
 import java.util.RandomAccess;
 
 import com.doctusoft.common.core.bean.GenericListeners;
@@ -32,9 +33,6 @@ import com.doctusoft.common.core.bean.ListenerRegistration;
 import com.google.common.collect.ForwardingList;
 import com.google.common.collect.Lists;
 
-/**
- * TODO: the iterator() should also return an observed iterator
- */
 public class ObservableList<T> extends ForwardingList<T> implements RandomAccess {
 	
 	protected InsertListeners<T> insertListeners = new InsertListeners<T>();
@@ -44,7 +42,7 @@ public class ObservableList<T> extends ForwardingList<T> implements RandomAccess
 	 * We use encapsulation, because subclassing can result in unexpected errors, when the ArrayList is implemented differently: for example the GWT implementation of the .remove(Object o) redirects to remove(int index),
 	 * while the JVM implementation does not. If we overwrite the methods, the listeners in GWT would fire twice: first for the originally called method and then in the redirected one. 
 	 */
-	private List<T> delegate;
+	protected List<T> delegate;
 	
 	@Override
 	protected List<T> delegate() {
@@ -59,6 +57,10 @@ public class ObservableList<T> extends ForwardingList<T> implements RandomAccess
 		delegate = Lists.newArrayListWithCapacity(initialCapacity);
 	}
 	
+	public ObservableList(Collection<? extends T> c) {
+		delegate = Lists.newArrayList(c);
+	}
+	
 	public ListenerRegistration addInsertListener(ListElementInsertedListener<T> listener) {
 		return insertListeners.addListener(listener);
 	}
@@ -66,6 +68,35 @@ public class ObservableList<T> extends ForwardingList<T> implements RandomAccess
 	public ListenerRegistration addDeleteListener(ListElementRemovedListener<T> listener) {
 		return removeListeners.addListener(listener);
 	}
+	
+	
+	public interface ListElementInsertedListener<T> {
+		public void inserted(ObservableList<T> list, int index, T element);
+	}
+	
+	public interface ListElementRemovedListener<T> {
+		public void removed(ObservableList<T> list, int index, T element);
+	}
+	
+	protected class InsertListeners<T> extends GenericListeners<ObservableList.ListElementInsertedListener<T>> {
+		public void fireEvent(final ObservableList<T> list, final int index, final T element) {
+			forEachListener(new ListenerCallback<ObservableList.ListElementInsertedListener<T>>() {
+				public void apply(ObservableList.ListElementInsertedListener<T> listener) {
+					listener.inserted(list, index, element);
+				};
+			});
+		}
+	};
+
+	protected class RemoveListeners<T> extends GenericListeners<ObservableList.ListElementRemovedListener<T>> {
+		public void fireEvent(final ObservableList<T> list, final int index, final T element) {
+			forEachListener(new ListenerCallback<ObservableList.ListElementRemovedListener<T>>() {
+				public void apply(ObservableList.ListElementRemovedListener<T> listener) {
+					listener.removed(list, index, element);
+				};
+			});
+		}
+	};
 	
 	@Override
 	public boolean add(T e) {
@@ -161,45 +192,44 @@ public class ObservableList<T> extends ForwardingList<T> implements RandomAccess
 	}
 	
 	@Override 
-	public Iterator<T> iterator() {
-		throw new UnsupportedOperationException();
-	}
-	
-	@Override 
 	public ListIterator<T> listIterator() {
-		throw new UnsupportedOperationException();
+		throw new UnsupportedOperationException(); // TODO
 	}
 	
 	@Override 
 	public ListIterator<T> listIterator(int index) {
 		throw new UnsupportedOperationException();
 	}
-	
-	public interface ListElementInsertedListener<T> {
-		public void inserted(ObservableList<T> list, int index, T element);
-	}
-	
-	public interface ListElementRemovedListener<T> {
-		public void removed(ObservableList<T> list, int index, T element);
-	}
-	
-	protected class InsertListeners<T> extends GenericListeners<ObservableList.ListElementInsertedListener<T>> {
-		public void fireEvent(final ObservableList<T> list, final int index, final T element) {
-			forEachListener(new ListenerCallback<ObservableList.ListElementInsertedListener<T>>() {
-				public void apply(ObservableList.ListElementInsertedListener<T> listener) {
-					listener.inserted(list, index, element);
-				};
-			});
-		}
-	};
 
-	protected class RemoveListeners<T> extends GenericListeners<ObservableList.ListElementRemovedListener<T>> {
-		public void fireEvent(final ObservableList<T> list, final int index, final T element) {
-			forEachListener(new ListenerCallback<ObservableList.ListElementRemovedListener<T>>() {
-				public void apply(ObservableList.ListElementRemovedListener<T> listener) {
-					listener.removed(list, index, element);
-				};
-			});
-		}
-	};
+	@Override
+	public Iterator<T> iterator() {
+		return new Iterator<T>() {
+			private int index = 0;
+			private int lastReturned = -1;
+			
+			@Override
+			public boolean hasNext() {
+				return delegate.size() > index;
+			}
+
+			@Override
+			public T next() {
+				if(!hasNext()) {
+					throw new NoSuchElementException();
+				}
+				lastReturned = index;
+				return delegate.get(index++);
+			}
+
+			@Override
+			public void remove() {
+				if (lastReturned < 0) {
+					throw new IllegalStateException();
+				}
+				ObservableList.this.remove(lastReturned); // triggers the handlers
+				index--;
+				lastReturned = -1;
+			}
+		};
+	}
 }

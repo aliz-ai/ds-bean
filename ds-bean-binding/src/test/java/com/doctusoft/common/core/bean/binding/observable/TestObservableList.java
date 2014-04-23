@@ -23,6 +23,7 @@ package com.doctusoft.common.core.bean.binding.observable;
 
 import static org.junit.Assert.assertEquals;
 
+import java.util.Iterator;
 import java.util.List;
 
 import org.junit.After;
@@ -125,6 +126,18 @@ public class TestObservableList {
 		sourceList.addAll(ImmutableList.of("a", "b", "c"));
 		assertTargetList("abc");
 		sourceList.clear();
+		assertEquals(0, targetList.size());
+	}
+	
+	@Test
+	public void testIterator() {
+		sourceList.addAll(ImmutableList.of("a", "b", "c"));
+		Iterator<String> itr = sourceList.iterator();
+		assertEquals(3, targetList.size());
+		while (itr.hasNext()) {
+			itr.next();
+			itr.remove();
+		}
 		assertEquals(0, targetList.size());
 	}
 }
