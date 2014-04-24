@@ -5,8 +5,9 @@
 		<artifactId>ds-bean-parent</artifactId>
 		<version>0.1.10-SNAPSHOT</version>
 	</parent>
-	<artifactId>ds-bean-binding</artifactId>
-	<name>ds-bean-binding</name>
+	<artifactId>ds-bean-apt-test</artifactId>
+	<name>ds-bean-apt-test</name>
+	<packaging>jar</packaging>
 
 	<properties>
 	</properties>
@@ -18,9 +19,9 @@
 			    <directory>${basedir}/src/main/java</directory>
 			</resource>
 		</resources>
-
+	
 		<plugins>
-			<plugin>
+   			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>license-maven-plugin</artifactId>
 				<configuration>
@@ -45,7 +46,8 @@
 		</dependency>
 		<dependency>
 			<groupId>com.doctusoft</groupId>
-			<artifactId>lombok-ds</artifactId>
+			<artifactId>ds-bean-apt</artifactId>
+			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>com.google.guava</groupId>

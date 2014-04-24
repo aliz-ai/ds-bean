@@ -5,8 +5,9 @@
 		<artifactId>ds-bean-parent</artifactId>
 		<version>0.1.10-SNAPSHOT</version>
 	</parent>
-	<artifactId>ds-bean-binding</artifactId>
-	<name>ds-bean-binding</name>
+	<artifactId>ds-bean-apt</artifactId>
+	<name>ds-bean-apt</name>
+	<packaging>jar</packaging>
 
 	<properties>
 	</properties>
@@ -16,6 +17,9 @@
 		<resources>
 			<resource>
 			    <directory>${basedir}/src/main/java</directory>
+			</resource>
+			<resource>
+			    <directory>${basedir}/src/main/resources</directory>
 			</resource>
 		</resources>
 
@@ -34,6 +38,23 @@
 					<inceptionYear>2014</inceptionYear>
 				</configuration>
 			</plugin>
+			<plugin>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<configuration>
+					<compilerVersion>${maven.compiler.target}</compilerVersion>
+					<source>${maven.compiler.source}</source>
+					<target>${maven.compiler.target}</target>
+					<encoding>${project.build.sourceEncoding}</encoding>
+					<!-- Explicitly define only the lombok processor to run.
+					  Because of the presence of the file in META-INF/services, javac would automatically try
+					  invoking our AnnotationProcessor, and this makes the build silently fail -->
+					<annotationProcessors>
+						<annotationProcessor>
+							lombok.core.AnnotationProcessor
+						</annotationProcessor>
+					</annotationProcessors>
+				</configuration>
+			</plugin>
 		</plugins>
 	</build>
 
@@ -44,8 +65,10 @@
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>com.doctusoft</groupId>
-			<artifactId>lombok-ds</artifactId>
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
+			<version>1.12.6</version>
+			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>com.google.guava</groupId>
