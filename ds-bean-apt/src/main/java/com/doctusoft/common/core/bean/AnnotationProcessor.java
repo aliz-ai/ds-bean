@@ -36,7 +36,10 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.ExecutableType;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
 import javax.tools.Diagnostic.Kind;
 import javax.tools.JavaFileObject;
 
@@ -67,7 +70,7 @@ public class AnnotationProcessor extends AbstractProcessor {
 				VariableElement variableElement = (VariableElement) element;
 				AttributeDescriptor descriptor = new AttributeDescriptor();
 				descriptor.setFieldName(element.getSimpleName().toString());
-				descriptor.setFieldTypeName(variableElement.asType().toString());
+				descriptor.setFieldType(variableElement.asType());
 				descriptor.setReadonly(element.getAnnotation(Attribute.class).readonly());
 				descriptor.setElement(element);
 				Element enclosingElement = variableElement.getEnclosingElement();
@@ -84,7 +87,7 @@ public class AnnotationProcessor extends AbstractProcessor {
 				AttributeDescriptor descriptor = new AttributeDescriptor();
 				descriptor.setFieldName(fieldName);
 				ExecutableType type = (ExecutableType) methodElement.asType();
-				descriptor.setFieldTypeName(type.getReturnType().toString());
+				descriptor.setFieldType(type.getReturnType());
 				descriptor.setReadonly(element.getAnnotation(Attribute.class).readonly());
 				descriptor.setElement(element);
 				Element enclosingElement = methodElement.getEnclosingElement();
@@ -129,8 +132,16 @@ public class AnnotationProcessor extends AbstractProcessor {
 			String holderTypeName = enclosingType.getSimpleName().toString();
 			writer.write("\npublic class " + holderTypeName + "_ {\n");
 			for (AttributeDescriptor descriptor : descriptors) {
-				String fieldTypeName = descriptor.getFieldTypeName();
+				TypeMirror fieldType = descriptor.getFieldType();
+				String fieldTypeName = fieldType.toString();
 				String mappedFieldTypeName = mapPrimitiveTypeNames(fieldTypeName);
+				String fieldTypeLiteral = mappedFieldTypeName;
+				if (fieldType.getKind() == TypeKind.DECLARED) {
+					// it can have type parameters
+					DeclaredType declaredType = (DeclaredType) fieldType;
+					TypeElement typeElement = (TypeElement) declaredType.asElement();
+					fieldTypeLiteral = typeElement.getQualifiedName().toString();
+				}
 				String fieldName = descriptor.getFieldName();
 				String capitalizedFieldName = Character.toUpperCase(fieldName.charAt(0)) + fieldName.substring(1);
 				String getterName = "get" + capitalizedFieldName;
@@ -161,10 +172,10 @@ public class AnnotationProcessor extends AbstractProcessor {
 								+ "        return \"" + fieldName + "\";\n"
 								+ "    }\n"
 								+ "    @Override public Class<" + mappedFieldTypeName + "> getType() {\n"
-								+ "        return " + mappedFieldTypeName + ".class;\n"
+								+ "        return (Class)" + fieldTypeLiteral + ".class;\n"
 								+ "    }\n"
 								+ "    @Override public Class<" + holderTypeName + "> getParent() {\n"
-								+ "        return " + holderTypeName + ".class;\n"
+								+ "        return (Class)" + holderTypeName + ".class;\n"
 								+ "    }\n"
 								+ "};\n\n");
 			}

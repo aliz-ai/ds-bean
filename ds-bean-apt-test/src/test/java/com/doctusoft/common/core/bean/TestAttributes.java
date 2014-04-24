@@ -1,12 +1,16 @@
 package com.doctusoft.common.core.bean;
 
 import static org.junit.Assert.assertEquals;
+
+import java.util.List;
+
 import lombok.Getter;
 import lombok.Setter;
 
 import org.junit.Test;
 
 import com.doctusoft.Attribute;
+import com.google.common.collect.ImmutableList;
 
 /*
  * #%L
@@ -41,6 +45,9 @@ public class TestAttributes {
 	@Attribute
 	private int intField;
 	
+	@Attribute
+	private List<String> stringListField;
+	
 	@Test
 	public void testStringField() {
 		com.doctusoft.common.core.bean.Attribute<TestAttributes, String> field = TestAttributes_.stringField;
@@ -63,4 +70,15 @@ public class TestAttributes {
 		assertEquals(new Integer(42), field.getValue(this));
 	}
 	
+	@Test
+	public void testStringListField() {
+		com.doctusoft.common.core.bean.Attribute<TestAttributes, List<String>> field = TestAttributes_.stringListField;
+		assertEquals("stringListField", field.getName());
+		assertEquals(List.class, field.getType());
+		assertEquals(TestAttributes.class, field.getParent());
+		ImmutableList<String> list = ImmutableList.of("a");
+		field.setValue(this, list);
+		assertEquals(list, stringListField);
+		assertEquals(list, field.getValue(this));
+	}
 }

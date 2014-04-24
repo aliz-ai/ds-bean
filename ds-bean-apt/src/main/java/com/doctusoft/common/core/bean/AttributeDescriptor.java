@@ -22,13 +22,14 @@ package com.doctusoft.common.core.bean;
 
 
 import javax.lang.model.element.Element;
+import javax.lang.model.type.TypeMirror;
 
 import lombok.Data;
 
 @Data
 public class AttributeDescriptor {
 	
-	private String fieldTypeName;
+	private TypeMirror fieldType;
 	
 	private String fieldName;
 
