@@ -22,6 +22,7 @@ package com.doctusoft.common.core.bean;
 
 
 import java.io.Writer;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -35,6 +36,7 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.ExecutableType;
@@ -44,9 +46,11 @@ import javax.tools.Diagnostic.Kind;
 import javax.tools.JavaFileObject;
 
 import com.doctusoft.Attribute;
+import com.google.common.base.Joiner;
 import com.google.common.base.Objects;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 
 @SupportedAnnotationTypes("com.doctusoft.Attribute")
@@ -137,10 +141,18 @@ public class AnnotationProcessor extends AbstractProcessor {
 				String mappedFieldTypeName = mapPrimitiveTypeNames(fieldTypeName);
 				String fieldTypeLiteral = mappedFieldTypeName;
 				if (fieldType.getKind() == TypeKind.DECLARED) {
-					// it can have type parameters
+					// the field type literal is the type qualified name without the type parameters
 					DeclaredType declaredType = (DeclaredType) fieldType;
 					TypeElement typeElement = (TypeElement) declaredType.asElement();
 					fieldTypeLiteral = typeElement.getQualifiedName().toString();
+					// the type is present with the type parameters, but if the parameter is a type parameter of the enclosing type, it's replaced with a ? wildcard
+					mappedFieldTypeName = fieldTypeLiteral;
+					List<String> parameterStrings = Lists.newArrayList();
+					for (TypeParameterElement typeParameterElement : typeElement.getTypeParameters()) {
+						// TODO, actual types, that are not type parameters of the enclosing type, should be kept
+						parameterStrings.add("?");
+					}
+					mappedFieldTypeName += "<" + Joiner.on(",").join(parameterStrings) + ">";
 				}
 				String fieldName = descriptor.getFieldName();
 				String capitalizedFieldName = Character.toUpperCase(fieldName.charAt(0)) + fieldName.substring(1);
