@@ -21,6 +21,8 @@ package com.doctusoft.common.core.bean;
  */
 
 
+import javax.lang.model.element.Element;
+
 import lombok.Data;
 
 @Data
@@ -30,4 +32,7 @@ public class AttributeDescriptor {
 	
 	private String fieldName;
 
+	private boolean readonly;
+	
+	private Element element;
 }

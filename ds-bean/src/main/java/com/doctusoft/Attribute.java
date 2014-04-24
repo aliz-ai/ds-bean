@@ -29,5 +29,8 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.SOURCE)
 @Target({ElementType.TYPE, ElementType.FIELD, ElementType.METHOD})
 public @interface Attribute {
-
+	/**
+	 * Readonly attributes throw an {@link UnsupportedOperationException} when written. 
+	 */
+	public boolean readonly() default false;
 }

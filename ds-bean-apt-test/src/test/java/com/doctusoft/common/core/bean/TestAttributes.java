@@ -1,5 +1,13 @@
 package com.doctusoft.common.core.bean;
 
+import static org.junit.Assert.assertEquals;
+import lombok.Getter;
+import lombok.Setter;
+
+import org.junit.Test;
+
+import com.doctusoft.Attribute;
+
 /*
  * #%L
  * ds-bean-apt-test
@@ -21,21 +29,38 @@ package com.doctusoft.common.core.bean;
  */
 
 
-import org.junit.Test;
-
-import com.doctusoft.Attribute;
-
+/**
+ * This tests the generated attribute implementations. It uses attributes generated on fields.
+ */
+@Getter @Setter
 public class TestAttributes {
 	
 	@Attribute
-	private String field;
+	private String stringField;
 	
 	@Attribute
-	private Integer field2;
+	private int intField;
 	
 	@Test
-	public void test() {
-		System.out.println("field: " + TestAttributes_.field);
+	public void testStringField() {
+		com.doctusoft.common.core.bean.Attribute<TestAttributes, String> field = TestAttributes_.stringField;
+		assertEquals("stringField", field.getName());
+		assertEquals(String.class, field.getType());
+		assertEquals(TestAttributes.class, field.getParent());
+		field.setValue(this, "value");
+		assertEquals("value", stringField);
+		assertEquals("value", field.getValue(this));
 	}
 
+	@Test
+	public void testIntField() {
+		com.doctusoft.common.core.bean.Attribute<TestAttributes, Integer> field = TestAttributes_.intField;
+		assertEquals("intField", field.getName());
+		assertEquals(Integer.class, field.getType());
+		assertEquals(TestAttributes.class, field.getParent());
+		field.setValue(this, 42);
+		assertEquals(42, intField);
+		assertEquals(new Integer(42), field.getValue(this));
+	}
+	
 }

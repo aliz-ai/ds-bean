@@ -22,6 +22,7 @@ package com.doctusoft.common.core.bean;
 
 
 import java.io.Writer;
+import java.util.Map;
 import java.util.Set;
 
 import javax.annotation.processing.AbstractProcessor;
@@ -31,12 +32,18 @@ import javax.annotation.processing.RoundEnvironment;
 import javax.annotation.processing.SupportedAnnotationTypes;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.ExecutableType;
+import javax.tools.Diagnostic.Kind;
 import javax.tools.JavaFileObject;
 
+import com.doctusoft.Attribute;
+import com.google.common.base.Objects;
 import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Multimap;
 
 @SupportedAnnotationTypes("com.doctusoft.Attribute")
@@ -61,9 +68,26 @@ public class AnnotationProcessor extends AbstractProcessor {
 				AttributeDescriptor descriptor = new AttributeDescriptor();
 				descriptor.setFieldName(element.getSimpleName().toString());
 				descriptor.setFieldTypeName(variableElement.asType().toString());
-				System.out.println("type: " + variableElement.asType().toString());
+				descriptor.setReadonly(element.getAnnotation(Attribute.class).readonly());
+				descriptor.setElement(element);
 				Element enclosingElement = variableElement.getEnclosingElement();
-				System.out.println("enclosing type: " + enclosingElement);
+				attributeDescriptors.put((TypeElement) enclosingElement, descriptor);
+			}
+			if (element.getKind() == ElementKind.METHOD) {
+				ExecutableElement methodElement = (ExecutableElement) element;
+				// ensure that the method is on a getter
+				String fieldName = getFieldNameFromGetter(methodElement);
+				if (fieldName == null) {
+					processingEnv.getMessager().printMessage(Kind.ERROR, "@Attribute must be on a getter method", methodElement);
+				}
+				fieldName = Character.toLowerCase(fieldName.charAt(0)) + fieldName.substring(1);
+				AttributeDescriptor descriptor = new AttributeDescriptor();
+				descriptor.setFieldName(fieldName);
+				ExecutableType type = (ExecutableType) methodElement.asType();
+				descriptor.setFieldTypeName(type.getReturnType().toString());
+				descriptor.setReadonly(element.getAnnotation(Attribute.class).readonly());
+				descriptor.setElement(element);
+				Element enclosingElement = methodElement.getEnclosingElement();
 				attributeDescriptors.put((TypeElement) enclosingElement, descriptor); 
 			}
 		}
@@ -73,19 +97,78 @@ public class AnnotationProcessor extends AbstractProcessor {
 		}
 		return true;
 	}
-
+	
+	public String getFieldNameFromGetter(ExecutableElement element) {
+		String methodName = element.getSimpleName().toString();
+		String returnType = ((ExecutableType) element.asType()).getReturnType().toString();
+		if (methodName.startsWith("get") || (methodName.startsWith("is") && returnType.equals("boolean"))) {
+			if (methodName.startsWith("get")) {
+				String fieldName = methodName.substring(3);
+				if (fieldName.length() == 0)
+					return null;		// not a valid getter
+				return fieldName;
+			}
+			if (methodName.startsWith("is")) {
+				String fieldName = methodName.substring(2);
+				if (fieldName.length() == 0)
+					return null;		// not a valid getter
+				return fieldName;
+			}
+			return null;
+		}
+		return null;	// this is not a getter
+	}
+	
 	public void emitClassSource(TypeElement enclosingType, Iterable<AttributeDescriptor> descriptors) {
 		try {
 			JavaFileObject source = filer.createSourceFile(enclosingType.getQualifiedName() + "_");
 			PackageElement pck = (PackageElement) enclosingType.getEnclosingElement();
 			Writer writer = source.openWriter();
-			writer.write("package " + pck.getQualifiedName() + ";\n");
-			writer.write("public class " + enclosingType.getSimpleName() + "_ {\n");
+			writer.write("package " + pck.getQualifiedName() + ";\n\n");
+			writer.write("import com.doctusoft.common.core.bean.Attribute;\n");
+			String holderTypeName = enclosingType.getSimpleName().toString();
+			writer.write("\npublic class " + holderTypeName + "_ {\n");
 			for (AttributeDescriptor descriptor : descriptors) {
-				writer.write("    public static final com.doctusoft.common.core.bean.Attribute<"
-						+ enclosingType.getSimpleName() + "," + descriptor.getFieldTypeName() + "> " + descriptor.getFieldName() + " = null;");
+				String fieldTypeName = descriptor.getFieldTypeName();
+				String mappedFieldTypeName = mapPrimitiveTypeNames(fieldTypeName);
+				String fieldName = descriptor.getFieldName();
+				String capitalizedFieldName = Character.toUpperCase(fieldName.charAt(0)) + fieldName.substring(1);
+				String getterName = "get" + capitalizedFieldName;
+				if (fieldTypeName.equals("boolean")) {
+					getterName = "is" + capitalizedFieldName;
+				}
+				String setterName = "set" + capitalizedFieldName;
+				writer.write("    public static final Attribute<"
+						+ holderTypeName + "," + mappedFieldTypeName + "> " + fieldName + " = \n"
+								+ "    new Attribute<" + holderTypeName + "," + mappedFieldTypeName + ">() {\n"
+								+ "    @Override public " + mappedFieldTypeName + " getValue(" + holderTypeName + " instance) {\n"
+								+ "        return instance." + getterName + "();\n"
+								+ "    }\n");
+				if (!descriptor.isReadonly()) {
+					writer.write(
+							"    @Override public void setValue(" + holderTypeName + " instance, " + mappedFieldTypeName + " value) {\n"
+							+ "        instance." + setterName + "(value);\n"
+							+ "    }\n");
+				} else {
+					// readonly attribute
+					writer.write(
+							"    @Override public void setValue(" + holderTypeName + " instance, " + mappedFieldTypeName + " value) {\n"
+							+ "        throw new UnsupportedOperationException(\"The field " + fieldName + " on type " + holderTypeName + " did not declare a setter.\");\n"
+							+ "    }\n");
+				}
+				writer.write(
+								 "    @Override public String getName() {\n"
+								+ "        return \"" + fieldName + "\";\n"
+								+ "    }\n"
+								+ "    @Override public Class<" + mappedFieldTypeName + "> getType() {\n"
+								+ "        return " + mappedFieldTypeName + ".class;\n"
+								+ "    }\n"
+								+ "    @Override public Class<" + holderTypeName + "> getParent() {\n"
+								+ "        return " + holderTypeName + ".class;\n"
+								+ "    }\n"
+								+ "};\n\n");
 			}
-			writer.write("}");
+			writer.write("\n}");
 			writer.close();
 		} catch (FilerException e) {
 			// the file probably already existed, nothing to do
@@ -93,5 +176,48 @@ public class AnnotationProcessor extends AbstractProcessor {
 		} catch (Exception e) {
 			throw new RuntimeException("error creating source file for type: " + enclosingType, e);
 		}
+	}
+	
+	
+//	public boolean isSetterPresenet(TypeElement type, String setterName, String typeName) {
+//		System.out.println("looking for setter: " + setterName + ", "+ typeName);
+//		// look for declared methods
+//		// TODO do we have to look in supertypes? Is there a utility for this maybe?
+//		for (Element element: type.getEnclosedElements()) {
+//			if (element.getKind() == ElementKind.METHOD) {
+//				System.out.println("checking method: " + element);
+//				ExecutableElement methodElement = (ExecutableElement) element;
+//				// check method name
+//				if (!methodElement.getSimpleName().equals(setterName))
+//					continue;
+//				// return type void
+//				if (!"void".equals(methodElement.getReturnType().toString()))
+//					continue;
+//				// parameter count
+//				List<? extends VariableElement> parameters = methodElement.getParameters();
+//				if (parameters.size() != 1)
+//					continue;
+//				// parameter types
+//				VariableElement variableElement = parameters.get(0);
+//				if (typeName.equals(variableElement.asType().toString()))
+//					return true;
+//			}
+//		}
+//		return false;
+//	}
+	
+	public static final Map<String, String> primitiveTypesMap = ImmutableMap.<String, String>builder()
+			.put("boolean", "Boolean")
+				.put("byte", "Byte")
+				.put("short", "Short")
+				.put("char", "Character")
+				.put("int", "Integer")
+				.put("float", "Float")
+				.put("long", "Long")
+				.put("double", "Double")
+				.build();
+	
+	public static String mapPrimitiveTypeNames(String typeName) {
+		return Objects.firstNonNull(primitiveTypesMap.get(typeName), typeName);
 	}
 }
