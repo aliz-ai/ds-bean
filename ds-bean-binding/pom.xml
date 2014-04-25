@@ -44,8 +44,15 @@
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
+			<version>1.12.6</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
 			<groupId>com.doctusoft</groupId>
-			<artifactId>lombok-ds</artifactId>
+			<artifactId>ds-bean-apt</artifactId>
+			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>com.google.guava</groupId>

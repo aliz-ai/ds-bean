@@ -32,8 +32,8 @@ public class TestTwoWayBindings {
 	
 	@Test
 	public void testTwoWayBindingSingleAttribute() {
-		TestBean bean1 = new TestBean("abc");
-		TestBean bean2 = new TestBean("123");
+		TestBean bean1 = TestBeanRaw.create("abc");
+		TestBean bean2 = TestBeanRaw.create("123");
 		// bean1 as source, bean2 as target
 		BindingRegistration binding = Bindings.bind(Bindings.obs(bean1).get(TestBean._stringValue), Bindings.obs(bean2).get(TestBean._stringValue));
 		// the target is expected to be instantly overwritten

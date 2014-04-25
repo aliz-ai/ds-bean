@@ -21,16 +21,20 @@ package com.doctusoft.common.core.bean.binding.observable;
  */
 
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.ObservableAttribute;
-import lombok.Setter;
+import com.doctusoft.ObservableModel;
+import com.doctusoft.Property;
 
-@Getter @Setter
-@AllArgsConstructor
-public class TestBean {
+@ObservableModel
+public abstract class TestBeanRaw {
 	
-	@ObservableAttribute
+	public static TestBean create(String stringValue) {
+		// TODO support lombok annotations on Raw classes that propagate to the actual classes
+		TestBean testBean = new TestBean();
+		testBean.setStringValue(stringValue);
+		return testBean;
+	}
+
+	@Property
 	private String stringValue;
 
 }

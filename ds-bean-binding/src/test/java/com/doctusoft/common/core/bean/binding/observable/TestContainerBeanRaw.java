@@ -21,16 +21,19 @@ package com.doctusoft.common.core.bean.binding.observable;
  */
 
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.ObservableAttribute;
-import lombok.Setter;
+import com.doctusoft.ObservableModel;
+import com.doctusoft.Property;
 
-@Getter @Setter
-@AllArgsConstructor
-public class TestContainerBean {
+@ObservableModel
+public abstract class TestContainerBeanRaw {
 	
-	@ObservableAttribute
+	public static TestContainerBean create(TestBean testBean) {
+		TestContainerBean bean = new TestContainerBean();
+		bean.setTestBean(testBean);
+		return bean;
+	}
+	
+	@Property
 	private TestBean testBean;
 
 }

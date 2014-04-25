@@ -25,10 +25,8 @@ import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 
-import com.doctusoft.bean.ValueChangeListener;
 import com.doctusoft.common.core.bean.binding.Bindings;
 import com.doctusoft.common.core.bean.binding.Converter;
-import com.doctusoft.common.core.bean.binding.ValueBinding;
 
 public class TestObservedBindings {
 
@@ -49,7 +47,7 @@ public class TestObservedBindings {
 	@Test
 	public void testSimpleAttributeValueBinding() {
 		String string = "hello world";
-		TestBean testBean = new TestBean(string);
+		TestBean testBean = TestBeanRaw.create(string);
 		ObservableValueBinding<String> binding = Bindings.obs(testBean).get(TestBean._stringValue);
 		assertEquals(string, binding.getValue());
 		String newvalue = "newvalue";
@@ -60,7 +58,7 @@ public class TestObservedBindings {
 	@Test
 	public void testChainedAttributeValueBinding() {
 		String string = "hello world";
-		TestContainerBean testContainerBean = new TestContainerBean(new TestBean(string));
+		TestContainerBean testContainerBean = TestContainerBeanRaw.create(TestBeanRaw.create(string));
 		ObservableValueBinding<String> binding = Bindings
 				.obs(testContainerBean)
 				.get(TestContainerBean._testBean)
@@ -74,7 +72,7 @@ public class TestObservedBindings {
 	@Test
 	public void testConvertingValueBinding() {
 		String string = "1";
-		TestBean testBean = new TestBean(string);
+		TestBean testBean = TestBeanRaw.create(string);
 		ObservableValueBinding<Integer> binding = Bindings
 					.obs(testBean)
 					.get(TestBean._stringValue)

@@ -45,7 +45,7 @@ public class TestValueBindingBuilder {
 	public void testSimpleAttributeValueBinding() {
 		String string = "hello world";
 		TestBean testBean = new TestBean(string);
-		ValueBinding<String> binding = Bindings.on(testBean).get(TestBean._stringValue);
+		ValueBinding<String> binding = Bindings.on(testBean).get(TestBean_._stringValue);
 		assertEquals(string, binding.getValue());
 		String newvalue = "newvalue";
 		binding.setValue(newvalue);
@@ -59,8 +59,8 @@ public class TestValueBindingBuilder {
 		TestContainerBean testContainerBean = new TestContainerBean(new TestBean(string));
 		ValueBinding<String> binding = Bindings
 				.on(testContainerBean)
-				.get(TestContainerBean._testBean)
-				.get(TestBean._stringValue);
+				.get(TestContainerBean_._testBean)
+				.get(TestBean_._stringValue);
 		assertEquals(string, binding.getValue());
 		String newvalue = "newvalue";
 		binding.setValue(newvalue);
@@ -74,7 +74,7 @@ public class TestValueBindingBuilder {
 		TestBean testBean = new TestBean(string);
 		ValueBinding<Integer> binding = Bindings
 					.on(testBean)
-					.get(TestBean._stringValue)
+					.get(TestBean_._stringValue)
 					.convert(new DummyConverter());
 		assertEquals(new Integer(1), binding.getValue());
 		binding.setValue(2);

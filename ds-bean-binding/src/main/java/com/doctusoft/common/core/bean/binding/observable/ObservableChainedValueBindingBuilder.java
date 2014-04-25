@@ -21,7 +21,7 @@ package com.doctusoft.common.core.bean.binding.observable;
  */
 
 
-import com.doctusoft.bean.ObservableAttribute;
+import com.doctusoft.bean.ObservableProperty;
 import com.doctusoft.common.core.bean.binding.Converter;
 
 public class ObservableChainedValueBindingBuilder<T> extends ObservableValueBindingBuilder<T> {
@@ -32,7 +32,7 @@ public class ObservableChainedValueBindingBuilder<T> extends ObservableValueBind
 		return builder;
 	}
 
-	public <Target> ObservableChainedValueBindingBuilder<Target> get(final ObservableAttribute<? super T, Target> attribute) {
+	public <Target> ObservableChainedValueBindingBuilder<Target> get(final ObservableProperty<? super T, Target> attribute) {
 		ObservableChainedValueBindingBuilder<Target> builder = new ObservableChainedValueBindingBuilder<Target>();
 		builder.source = new ObservableAttributeCompositeValueBinding<T, Target>(source, attribute);
 		return builder;

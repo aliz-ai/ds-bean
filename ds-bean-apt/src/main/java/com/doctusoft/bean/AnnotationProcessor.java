@@ -212,7 +212,7 @@ public class AnnotationProcessor extends AbstractProcessor {
 				+ "    }\n\n");
 		writer.write("    public void set" + capitalizedFieldName + "(" + fieldTypeName + " " + fieldName + ") {\n"
 				+ "       this." + fieldName + " = " + fieldName + ";\n"
-				+ "       _" + fieldName + ".fireListeners(" + fieldName + ");\n"
+				+ "       _" + fieldName + ".fireListeners(this, " + fieldName + ");\n"
 				+ "    }\n\n");
 		
 	}
@@ -238,6 +238,12 @@ public class AnnotationProcessor extends AbstractProcessor {
 		}
 		String setterName = "set" + capitalizedFieldName;
 		String interfaceToImplement = descriptor.isObservable()?"ObservableProperty":"Property";
+		String listenersName = "_" + fieldName + "_listeners";
+		if (descriptor.isObservable()) {
+			
+			writer.write("        private PropertyListeners<" + mappedFieldTypeName + "> " + listenersName + " = new PropertyListeners<" + mappedFieldTypeName + ">();\n");
+			
+		}
 		writer.write("    public static final " + interfaceToImplement + "<"
 				+ holderTypeName + "," + mappedFieldTypeName + "> _" + fieldName + " = \n"
 						+ "    new " + interfaceToImplement + "<" + holderTypeName + "," + mappedFieldTypeName + ">() {\n"
@@ -257,12 +263,11 @@ public class AnnotationProcessor extends AbstractProcessor {
 					+ "    }\n");
 		}
 		if (descriptor.isObservable()) {
-			writer.write("        PropertyListeners<" + mappedFieldTypeName + "> listeners = new PropertyListeners<" + mappedFieldTypeName + ">();\n");
 			writer.write("        @Override public ListenerRegistration addChangeListener(" + holderTypeName + " object, ValueChangeListener<" + mappedFieldTypeName + "> valueChangeListener) {\n"
-					   + "            return listeners.addListener(valueChangeListener);\n"
+					   + "            return object." + listenersName + ".addListener(valueChangeListener);\n"
 					   + "        }\n");
-			writer.write("        @Override public void fireListeners(" + mappedFieldTypeName + " newValue) {\n"
-					   + "            listeners.fireListeners(newValue);\n"
+			writer.write("        @Override public void fireListeners(" + holderTypeName + " object, " + mappedFieldTypeName + " newValue) {\n"
+					   + "            object." + listenersName + ".fireListeners(newValue);\n"
 					   + "        }\n");
 		}
 		writer.write(

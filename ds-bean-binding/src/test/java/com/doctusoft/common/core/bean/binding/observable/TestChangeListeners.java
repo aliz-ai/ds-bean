@@ -31,8 +31,8 @@ public class TestChangeListeners {
 	
 	@Test
 	public void testSimpleAttributeChange() {
-		TestBean bean1 = new TestBean("abc");
-		TestBean bean2 = new TestBean("123");
+		TestBean bean1 = TestBeanRaw.create("abc");
+		TestBean bean2 = TestBeanRaw.create("123");
 		Bindings.bind(Bindings.obs(bean1).get(TestBean._stringValue), Bindings.on(bean2).get(TestBean._stringValue));
 		assertEquals("abc", bean2.getStringValue());
 		bean1.setStringValue("qwe");
@@ -41,8 +41,8 @@ public class TestChangeListeners {
 
 	@Test
 	public void testChainedAttributeChange() {
-		TestContainerBean container1 = new TestContainerBean(new TestBean("abc"));
-		TestContainerBean container2 = new TestContainerBean(new TestBean("123"));
+		TestContainerBean container1 = TestContainerBeanRaw.create(TestBeanRaw.create("abc"));
+		TestContainerBean container2 = TestContainerBeanRaw.create(TestBeanRaw.create("123"));
 		Bindings.bind(Bindings.obs(container1).get(TestContainerBean._testBean).get(TestBean._stringValue),
 				Bindings.on(container2).get(TestContainerBean._testBean).get(TestBean._stringValue));
 		assertEquals("abc", container2.getTestBean().getStringValue());
@@ -52,12 +52,12 @@ public class TestChangeListeners {
 
 	@Test
 	public void testBindingChainChange() {
-		TestContainerBean container1 = new TestContainerBean(new TestBean("abc"));
-		TestContainerBean container2 = new TestContainerBean(new TestBean("123"));
+		TestContainerBean container1 = TestContainerBeanRaw.create(TestBeanRaw.create("abc"));
+		TestContainerBean container2 = TestContainerBeanRaw.create(TestBeanRaw.create("123"));
 		Bindings.bind(Bindings.obs(container1).get(TestContainerBean._testBean).get(TestBean._stringValue),
 				Bindings.on(container2).get(TestContainerBean._testBean).get(TestBean._stringValue));
 		assertEquals("abc", container2.getTestBean().getStringValue());
-		container1.setTestBean(new TestBean("qwe"));
+		container1.setTestBean(TestBeanRaw.create("qwe"));
 		assertEquals("qwe", container2.getTestBean().getStringValue());
 	}
 }

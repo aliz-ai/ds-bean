@@ -25,5 +25,5 @@ public interface ObservableProperty<Bean, Value> extends Property<Bean, Value> {
 
 	ListenerRegistration addChangeListener(Bean object, ValueChangeListener<Value> valueChangeListener);
 	
-	void fireListeners(Value newValue);
+	void fireListeners(Bean object, Value newValue);
 }
