@@ -36,7 +36,6 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.ExecutableType;
@@ -48,6 +47,7 @@ import javax.tools.JavaFileObject;
 import com.doctusoft.Attribute;
 import com.google.common.base.Joiner;
 import com.google.common.base.Objects;
+import com.google.common.base.Strings;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
@@ -103,7 +103,7 @@ public class AnnotationProcessor extends AbstractProcessor {
 			emitClassSource(typeElement, attributeDescriptors.get(typeElement));
 		}
 		return true;
-	}
+ 	}
 	
 	public String getFieldNameFromGetter(ExecutableElement element) {
 		String methodName = element.getSimpleName().toString();
@@ -133,8 +133,14 @@ public class AnnotationProcessor extends AbstractProcessor {
 			Writer writer = source.openWriter();
 			writer.write("package " + pck.getQualifiedName() + ";\n\n");
 			writer.write("import com.doctusoft.common.core.bean.Attribute;\n");
-			String holderTypeName = enclosingType.getSimpleName().toString();
-			writer.write("\npublic class " + holderTypeName + "_ {\n");
+			DeclaredType holderType = (DeclaredType) enclosingType.asType();
+			String holderTypeSimpleName = ((TypeElement) holderType.asElement()).getSimpleName().toString();
+			String holderTypeName = holderTypeSimpleName;
+			if (!holderType.getTypeArguments().isEmpty()) {
+				int parametersCount = holderType.getTypeArguments().size();
+				holderTypeName += "<" + Strings.repeat("?,", parametersCount - 1) + "?>";
+			}
+			writer.write("\npublic class " + holderTypeSimpleName + "_ {\n");
 			for (AttributeDescriptor descriptor : descriptors) {
 				TypeMirror fieldType = descriptor.getFieldType();
 				String fieldTypeName = fieldType.toString();
@@ -146,13 +152,7 @@ public class AnnotationProcessor extends AbstractProcessor {
 					TypeElement typeElement = (TypeElement) declaredType.asElement();
 					fieldTypeLiteral = typeElement.getQualifiedName().toString();
 					// the type is present with the type parameters, but if the parameter is a type parameter of the enclosing type, it's replaced with a ? wildcard
-					mappedFieldTypeName = fieldTypeLiteral;
-					List<String> parameterStrings = Lists.newArrayList();
-					for (TypeParameterElement typeParameterElement : typeElement.getTypeParameters()) {
-						// TODO, actual types, that are not type parameters of the enclosing type, should be kept
-						parameterStrings.add("?");
-					}
-					mappedFieldTypeName += "<" + Joiner.on(",").join(parameterStrings) + ">";
+					mappedFieldTypeName = eraseTypeVariables(declaredType);
 				}
 				String fieldName = descriptor.getFieldName();
 				String capitalizedFieldName = Character.toUpperCase(fieldName.charAt(0)) + fieldName.substring(1);
@@ -165,12 +165,12 @@ public class AnnotationProcessor extends AbstractProcessor {
 						+ holderTypeName + "," + mappedFieldTypeName + "> " + fieldName + " = \n"
 								+ "    new Attribute<" + holderTypeName + "," + mappedFieldTypeName + ">() {\n"
 								+ "    @Override public " + mappedFieldTypeName + " getValue(" + holderTypeName + " instance) {\n"
-								+ "        return instance." + getterName + "();\n"
+								+ "        return (" + fieldTypeLiteral + ") instance." + getterName + "();\n"
 								+ "    }\n");
 				if (!descriptor.isReadonly()) {
 					writer.write(
 							"    @Override public void setValue(" + holderTypeName + " instance, " + mappedFieldTypeName + " value) {\n"
-							+ "        instance." + setterName + "(value);\n"
+							+ "        instance." + setterName + "((" + fieldTypeLiteral + ")value);\n"
 							+ "    }\n");
 				} else {
 					// readonly attribute
@@ -187,7 +187,7 @@ public class AnnotationProcessor extends AbstractProcessor {
 								+ "        return (Class)" + fieldTypeLiteral + ".class;\n"
 								+ "    }\n"
 								+ "    @Override public Class<" + holderTypeName + "> getParent() {\n"
-								+ "        return (Class)" + holderTypeName + ".class;\n"
+								+ "        return (Class)" + holderTypeSimpleName + ".class;\n"
 								+ "    }\n"
 								+ "};\n\n");
 			}
@@ -199,6 +199,29 @@ public class AnnotationProcessor extends AbstractProcessor {
 		} catch (Exception e) {
 			throw new RuntimeException("error creating source file for type: " + enclosingType, e);
 		}
+	}
+	
+	/**
+	 * Recursively cans for type arguments at full depth and replaces type variables with ? wildcards. Returns the resulting type reference string 
+	 */
+	public String eraseTypeVariables(DeclaredType declaredType) {
+		String result = ((TypeElement) declaredType.asElement()).getQualifiedName().toString();
+		if (!declaredType.getTypeArguments().isEmpty()) {
+			List<String> parameterStrings = Lists.newArrayList();
+			for (TypeMirror typeMirror : declaredType.getTypeArguments()) {
+				if (typeMirror.getKind() == TypeKind.DECLARED) {
+					// normal declared types parameters are kept
+					parameterStrings.add(eraseTypeVariables((DeclaredType) typeMirror));
+					
+				}
+				if (typeMirror.getKind() == TypeKind.TYPEVAR) { 
+					// type parameters of the enclosign type are erased due to the static declaration
+					parameterStrings.add("?");
+				}
+			}
+			result += "<" + Joiner.on(",").join(parameterStrings) + ">";
+		}
+		return result;
 	}
 	
 	
