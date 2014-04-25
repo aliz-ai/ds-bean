@@ -25,7 +25,7 @@ import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 
-import com.doctusoft.common.core.bean.ValueChangeListener;
+import com.doctusoft.bean.ValueChangeListener;
 import com.doctusoft.common.core.bean.binding.Bindings;
 import com.doctusoft.common.core.bean.binding.Converter;
 import com.doctusoft.common.core.bean.binding.ValueBinding;

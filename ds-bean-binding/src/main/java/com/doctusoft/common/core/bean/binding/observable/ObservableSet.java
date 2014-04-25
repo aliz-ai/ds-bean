@@ -6,8 +6,8 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
-import com.doctusoft.common.core.bean.GenericListeners;
-import com.doctusoft.common.core.bean.ListenerRegistration;
+import com.doctusoft.bean.GenericListeners;
+import com.doctusoft.bean.ListenerRegistration;
 import com.google.common.collect.ForwardingSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;

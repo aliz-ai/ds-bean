@@ -1,4 +1,4 @@
-package com.doctusoft.common.core.bean;
+package com.doctusoft.bean;
 
 import static org.junit.Assert.assertEquals;
 
@@ -9,7 +9,7 @@ import lombok.Setter;
 
 import org.junit.Test;
 
-import com.doctusoft.Attribute;
+import com.doctusoft.Property;
 import com.google.common.collect.ImmutableList;
 
 /*
@@ -39,18 +39,18 @@ import com.google.common.collect.ImmutableList;
 @Getter @Setter
 public class TestAttributes {
 	
-	@Attribute
+	@Property
 	private String stringField;
 	
-	@Attribute
+	@Property
 	private int intField;
 	
-	@Attribute
+	@Property
 	private List<String> stringListField;
 	
 	@Test
 	public void testStringField() {
-		com.doctusoft.common.core.bean.Attribute<TestAttributes, String> field = TestAttributes_.stringField;
+		com.doctusoft.bean.Property<TestAttributes, String> field = TestAttributes_._stringField;
 		assertEquals("stringField", field.getName());
 		assertEquals(String.class, field.getType());
 		assertEquals(TestAttributes.class, field.getParent());
@@ -61,7 +61,7 @@ public class TestAttributes {
 
 	@Test
 	public void testIntField() {
-		com.doctusoft.common.core.bean.Attribute<TestAttributes, Integer> field = TestAttributes_.intField;
+		com.doctusoft.bean.Property<TestAttributes, Integer> field = TestAttributes_._intField;
 		assertEquals("intField", field.getName());
 		assertEquals(Integer.class, field.getType());
 		assertEquals(TestAttributes.class, field.getParent());
@@ -72,7 +72,7 @@ public class TestAttributes {
 	
 	@Test
 	public void testStringListField() {
-		com.doctusoft.common.core.bean.Attribute<TestAttributes, List<String>> field = TestAttributes_.stringListField;
+		com.doctusoft.bean.Property<TestAttributes, List<String>> field = TestAttributes_._stringListField;
 		assertEquals("stringListField", field.getName());
 		assertEquals(List.class, field.getType());
 		assertEquals(TestAttributes.class, field.getParent());

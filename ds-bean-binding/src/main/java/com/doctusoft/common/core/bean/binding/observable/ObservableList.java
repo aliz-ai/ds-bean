@@ -28,8 +28,8 @@ import java.util.ListIterator;
 import java.util.NoSuchElementException;
 import java.util.RandomAccess;
 
-import com.doctusoft.common.core.bean.GenericListeners;
-import com.doctusoft.common.core.bean.ListenerRegistration;
+import com.doctusoft.bean.GenericListeners;
+import com.doctusoft.bean.ListenerRegistration;
 import com.google.common.collect.ForwardingList;
 import com.google.common.collect.Lists;
 

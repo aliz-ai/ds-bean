@@ -21,13 +21,13 @@ package com.doctusoft.common.core.bean.binding;
  */
 
 
-import com.doctusoft.common.core.bean.Attribute;
+import com.doctusoft.bean.Property;
 
 public class AttributeCompositeValueBinding<Source, Target> extends CompositeValueBinding<Source, Target> {
 	
-	private final Attribute<? super Source, Target> attribute;
+	private final Property<? super Source, Target> attribute;
 
-	public AttributeCompositeValueBinding(ValueBinding<? extends Source> sourceBinding, Attribute<? super Source, Target> attribute) {
+	public AttributeCompositeValueBinding(ValueBinding<? extends Source> sourceBinding, Property<? super Source, Target> attribute) {
 		super(sourceBinding);
 		this.attribute = attribute;
 	}

@@ -21,8 +21,8 @@ package com.doctusoft.common.core.bean.binding;
  */
 
 
-import com.doctusoft.common.core.bean.ListenerRegistration;
-import com.doctusoft.common.core.bean.ValueChangeListener;
+import com.doctusoft.bean.ListenerRegistration;
+import com.doctusoft.bean.ValueChangeListener;
 import com.doctusoft.common.core.bean.binding.observable.ObservableValueBinding;
 
 public class OneWayBindingImpl<T> implements BindingRegistration {

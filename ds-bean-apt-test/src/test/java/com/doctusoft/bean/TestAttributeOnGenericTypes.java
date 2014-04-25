@@ -1,4 +1,4 @@
-package com.doctusoft.common.core.bean;
+package com.doctusoft.bean;
 
 import static org.junit.Assert.assertEquals;
 
@@ -11,7 +11,7 @@ public class TestAttributeOnGenericTypes {
 
 	@Test
 	public void testGenericMapField() {
-		Attribute<GenericBean<?>, Map<String, ?>> field = GenericBean_.genericMapField;
+		Property<GenericBean<?>, Map<String, ?>> field = GenericBean_._genericMapField;
 		assertEquals("genericMapField", field.getName());
 		assertEquals(Map.class, field.getType());
 		assertEquals(GenericBean.class, field.getParent());
@@ -19,7 +19,7 @@ public class TestAttributeOnGenericTypes {
 	
 	@Test
 	public void testGenericMultimapField() {
-		Attribute<GenericBean<?>, Map<String, List<?>>> field = GenericBean_.genericMultimapField;
+		Property<GenericBean<?>, Map<String, List<?>>> field = GenericBean_._genericMultimapField;
 		assertEquals("genericMultimapField", field.getName());
 		assertEquals(Map.class, field.getType());
 		assertEquals(GenericBean.class, field.getParent());

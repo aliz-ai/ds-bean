@@ -1,8 +1,8 @@
-package com.doctusoft.common.core.bean;
+package com.doctusoft.bean;
 
 /*
  * #%L
- * ds-bean-apt
+ * ds-bean
  * %%
  * Copyright (C) 2014 Doctusoft Ltd.
  * %%
@@ -20,20 +20,20 @@ package com.doctusoft.common.core.bean;
  * #L%
  */
 
+/**
+ *
+ * @since 3.0.0
+ */
+public interface Property<Bean, Value> {
 
-import javax.lang.model.element.Element;
-import javax.lang.model.type.TypeMirror;
+	Value getValue( Bean instance );
 
-import lombok.Data;
+	void setValue( Bean instance, Value value );
 
-@Data
-public class AttributeDescriptor {
-	
-	private TypeMirror fieldType;
-	
-	private String fieldName;
+	Class<Bean> getParent();
 
-	private boolean readonly;
-	
-	private Element element;
+	Class<Value> getType();
+
+	String getName();
+
 }

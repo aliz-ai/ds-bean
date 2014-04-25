@@ -1,4 +1,4 @@
-package com.doctusoft.common.core.bean;
+package com.doctusoft.bean;
 
 /*
  * #%L
@@ -21,9 +21,9 @@ package com.doctusoft.common.core.bean;
  */
 
 
-import com.doctusoft.common.core.bean.ParametricObjectMethodReferences.ObjectMethodReference0;
-import com.doctusoft.common.core.bean.ParametricObjectMethodReferences.ObjectMethodReference1;
-import com.doctusoft.common.core.bean.ParametricObjectMethodReferences.ObjectMethodReference2;
+import com.doctusoft.bean.ParametricObjectMethodReferences.ObjectMethodReference0;
+import com.doctusoft.bean.ParametricObjectMethodReferences.ObjectMethodReference1;
+import com.doctusoft.bean.ParametricObjectMethodReferences.ObjectMethodReference2;
 
 public abstract class ParametricClassMethodReferences {
 	

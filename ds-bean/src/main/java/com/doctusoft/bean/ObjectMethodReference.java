@@ -1,4 +1,4 @@
-package com.doctusoft.common.core.bean;
+package com.doctusoft.bean;
 
 /*
  * #%L
@@ -21,7 +21,18 @@ package com.doctusoft.common.core.bean;
  */
 
 
-public interface ListenerRegistration {
+public class ObjectMethodReference<Cls, ReturnType> {
+	
+	private final ClassMethodReference<Cls, ReturnType> ref;
+	private final Cls object;
+	
+	public ObjectMethodReference(Cls object, ClassMethodReference<Cls, ReturnType> ref) {
+		this.object = object;
+		this.ref = ref;
+	}
+	
+	public ReturnType apply(Object ... arguments) {
+		return ref.apply(object, arguments);
+	}
 
-	void removeHandler();
 }

@@ -1,17 +1,17 @@
-package com.doctusoft.common.core.bean;
+package com.doctusoft.bean;
 
-import com.doctusoft.Attribute;
+import com.doctusoft.Property;
 
 public interface BeanInterface {
 	
-	@Attribute
+	@Property
 	public String getStringAttribute();
 	public void setStringAttribute(String stringAttribute);
 
-	@Attribute(readonly=true)
+	@Property(readonly=true)
 	public int getIntAttribute();
 	
-	@Attribute
+	@Property
 	public boolean isBooleanAttribute();
 	public void setBooleanAttribute(boolean booleanAttribute);
 

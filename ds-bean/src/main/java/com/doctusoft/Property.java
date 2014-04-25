@@ -1,8 +1,8 @@
-package com.doctusoft.common.core.bean;
+package com.doctusoft;
 
 /*
  * #%L
- * ds-bean
+ * ds-bean-apt
  * %%
  * Copyright (C) 2014 Doctusoft Ltd.
  * %%
@@ -20,20 +20,17 @@ package com.doctusoft.common.core.bean;
  * #L%
  */
 
-/**
- *
- * @since 3.0.0
- */
-public interface Attribute<Holder, Value> {
 
-	Value getValue( Holder instance );
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-	void setValue( Holder instance, Value value );
-
-	Class<Holder> getParent();
-
-	Class<Value> getType();
-
-	String getName();
-
+@Retention(RetentionPolicy.SOURCE)
+@Target({ElementType.TYPE, ElementType.FIELD, ElementType.METHOD})
+public @interface Property {
+	/**
+	 * Readonly attributes throw an {@link UnsupportedOperationException} when written. 
+	 */
+	public boolean readonly() default false;
 }

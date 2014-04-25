@@ -21,8 +21,8 @@ package com.doctusoft.common.core.bean.binding.observable;
  */
 
 
-import com.doctusoft.common.core.bean.ListenerRegistration;
-import com.doctusoft.common.core.bean.ValueChangeListener;
+import com.doctusoft.bean.ListenerRegistration;
+import com.doctusoft.bean.ValueChangeListener;
 import com.doctusoft.common.core.bean.binding.Bindings;
 import com.doctusoft.common.core.bean.binding.ValueBinding;
 

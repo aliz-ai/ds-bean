@@ -21,7 +21,7 @@ package com.doctusoft.common.core.bean.binding;
  */
 
 
-import com.doctusoft.common.core.bean.Attribute;
+import com.doctusoft.bean.Property;
 
 public class ValueBindingBuilder<T> implements ValueBinding<T> {
 	
@@ -33,7 +33,7 @@ public class ValueBindingBuilder<T> implements ValueBinding<T> {
 		return builder;
 	}
 	
-	public <Target> ValueBindingBuilder<Target> get(Attribute<? super T, Target> attribute) {
+	public <Target> ValueBindingBuilder<Target> get(Property<? super T, Target> attribute) {
 		ValueBindingBuilder<Target> builder = new ValueBindingBuilder<Target>();
 		builder.source = new AttributeCompositeValueBinding<T, Target>(source, attribute);
 		return builder;

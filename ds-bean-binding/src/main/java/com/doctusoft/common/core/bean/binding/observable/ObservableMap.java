@@ -4,8 +4,8 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 
-import com.doctusoft.common.core.bean.GenericListeners;
-import com.doctusoft.common.core.bean.ListenerRegistration;
+import com.doctusoft.bean.GenericListeners;
+import com.doctusoft.bean.ListenerRegistration;
 import com.doctusoft.common.core.bean.binding.observable.ObservableList.ListElementRemovedListener;
 import com.doctusoft.common.core.bean.binding.observable.ObservableSet.SetElementRemovedListener;
 import com.google.common.collect.ForwardingMap;

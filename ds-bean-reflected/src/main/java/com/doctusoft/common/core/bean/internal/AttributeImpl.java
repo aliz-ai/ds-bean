@@ -25,7 +25,7 @@ import java.lang.reflect.InvocationTargetException;
 
 import org.apache.commons.beanutils.PropertyUtils;
 
-import com.doctusoft.common.core.bean.Attribute;
+import com.doctusoft.bean.Property;
 
 import static com.google.common.base.Preconditions.*;
 
@@ -41,7 +41,7 @@ import static com.google.common.base.Preconditions.*;
 @lombok.Getter
 @lombok.EqualsAndHashCode( of = { "parent", "name", "type" }, doNotUseGetters = true )
 @Deprecated
-public class AttributeImpl<E, T> implements Attribute<E, T> {
+public class AttributeImpl<E, T> implements Property<E, T> {
 
 	protected final Class<E> parent;
 	protected final String name;

@@ -1,4 +1,4 @@
-package com.doctusoft.common.core.bean;
+package com.doctusoft.bean;
 
 import java.util.List;
 import java.util.Map;
@@ -9,9 +9,9 @@ import lombok.Setter;
 @Getter @Setter
 public class GenericBean<T> {
 	
-	@com.doctusoft.Attribute
+	@com.doctusoft.Property
 	private Map<String, T> genericMapField;
 
-	@com.doctusoft.Attribute
+	@com.doctusoft.Property
 	private Map<String, List<T>> genericMultimapField;
 }

@@ -21,7 +21,7 @@ package com.doctusoft.common.core.bean.binding;
  */
 
 
-import com.doctusoft.common.core.bean.ParametricObjectMethodReferences.ObjectMethodReference1;
+import com.doctusoft.bean.ParametricObjectMethodReferences.ObjectMethodReference1;
 import com.doctusoft.common.core.bean.binding.observable.ObservableChainedValueBindingBuilder;
 import com.doctusoft.common.core.bean.binding.observable.ObservableValueBinding;
 import com.google.common.base.Function;

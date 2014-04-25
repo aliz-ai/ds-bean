@@ -23,8 +23,8 @@ package com.doctusoft.common.core.bean.binding.observable;
 
 import java.util.List;
 
-import com.doctusoft.common.core.bean.ListenerRegistration;
-import com.doctusoft.common.core.bean.ValueChangeListener;
+import com.doctusoft.bean.ListenerRegistration;
+import com.doctusoft.bean.ValueChangeListener;
 import com.doctusoft.common.core.bean.binding.CompositeValueBinding;
 import com.google.common.collect.Lists;
 

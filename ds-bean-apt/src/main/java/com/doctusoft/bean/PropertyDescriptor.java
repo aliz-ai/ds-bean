@@ -1,8 +1,8 @@
-package com.doctusoft.common.core.bean;
+package com.doctusoft.bean;
 
 /*
  * #%L
- * ds-bean
+ * ds-bean-apt
  * %%
  * Copyright (C) 2014 Doctusoft Ltd.
  * %%
@@ -21,18 +21,21 @@ package com.doctusoft.common.core.bean;
  */
 
 
-public class ObjectMethodReference<Cls, ReturnType> {
-	
-	private final ClassMethodReference<Cls, ReturnType> ref;
-	private final Cls object;
-	
-	public ObjectMethodReference(Cls object, ClassMethodReference<Cls, ReturnType> ref) {
-		this.object = object;
-		this.ref = ref;
-	}
-	
-	public ReturnType apply(Object ... arguments) {
-		return ref.apply(object, arguments);
-	}
+import javax.lang.model.element.Element;
+import javax.lang.model.type.TypeMirror;
 
+import lombok.Data;
+
+@Data
+public class PropertyDescriptor {
+	
+	private TypeMirror fieldType;
+	
+	private String fieldName;
+
+	private boolean readonly;
+	
+	private Element element;
+	
+	private boolean observable;
 }

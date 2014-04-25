@@ -1,4 +1,4 @@
-package com.doctusoft.common.core.bean;
+package com.doctusoft.bean.internal;
 
 /*
  * #%L
@@ -20,8 +20,18 @@ package com.doctusoft.common.core.bean;
  * #L%
  */
 
+import com.doctusoft.bean.GenericListeners;
+import com.doctusoft.bean.ValueChangeListener;
 
-public interface ObservableAttribute<Holder, Value> extends Attribute<Holder, Value> {
+public class PropertyListeners<T> extends GenericListeners<ValueChangeListener<T>> {
+	
+	public void fireListeners(final T newValue) {
+		forEachListener(new ListenerCallback<ValueChangeListener<T>>() {
+			@Override
+			public void apply(ValueChangeListener<T> listener) {
+				listener.valueChanged(newValue);
+			}
+		});
+	}
 
-	ListenerRegistration addChangeListener(Holder object, ValueChangeListener<Value> valueChangeListener);
 }

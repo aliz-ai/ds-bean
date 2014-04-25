@@ -1,31 +1,31 @@
-package com.doctusoft.common.core.bean;
+package com.doctusoft.bean;
 
 import static org.junit.Assert.assertNotNull;
 import lombok.Setter;
 
 import org.junit.Test;
 
-import com.doctusoft.Attribute;
+import com.doctusoft.Property;
 
 public class TestAttributeOnGetters {
 	
 	@Setter
 	private String stringField;
 	
-	@Attribute
+	@Property
 	public String getStringField() {
 		return stringField;
 	}
 	
-	@Attribute(readonly=true)
+	@Property(readonly=true)
 	public boolean isBooleanField() {
 		return false;
 	}
 	
 	@Test
 	public void testCodeCompilation() {
-		assertNotNull(TestAttributeOnGetters_.stringField);
-		assertNotNull(TestAttributeOnGetters_.booleanField);
+		assertNotNull(TestAttributeOnGetters_._stringField);
+		assertNotNull(TestAttributeOnGetters_._booleanField);
 	}
 	
 }
