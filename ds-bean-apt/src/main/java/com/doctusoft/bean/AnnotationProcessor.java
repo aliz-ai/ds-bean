@@ -21,6 +21,9 @@ package com.doctusoft.bean;
  */
 
 
+import java.io.ByteArrayOutputStream;
+import java.io.OutputStream;
+import java.io.PrintWriter;
 import java.io.Writer;
 import java.util.List;
 import java.util.Map;
@@ -60,12 +63,14 @@ public class AnnotationProcessor extends AbstractProcessor {
 	/**
 	 * Property descriptors by class typename
 	 */
-	Multimap<TypeElement, PropertyDescriptor> attributeDescriptors = ArrayListMultimap.create();
+	private Multimap<TypeElement, PropertyDescriptor> attributeDescriptors = ArrayListMultimap.create();
 	private Filer filer; 
+	
 	
 	@Override
 	public boolean process(Set<? extends TypeElement> annotations,
 			RoundEnvironment roundEnv) {
+		System.out.println("INVOKING APT");
 		// collect data
 		for (Element element : roundEnv.getElementsAnnotatedWith(com.doctusoft.Property.class)) {
 			if (element.getKind() == ElementKind.CLASS) {
@@ -101,7 +106,12 @@ public class AnnotationProcessor extends AbstractProcessor {
 		}
 		filer = processingEnv.getFiler();
 		for (TypeElement typeElement : attributeDescriptors.keySet()) {
-			emitClassSource(typeElement, attributeDescriptors.get(typeElement));
+			try {
+				emitClassSource(typeElement, attributeDescriptors.get(typeElement));
+			} catch (UnresolvedTypeException e) {
+				// do nothing, we will not emit this source file, hoping that in the next round we'll succeed
+				// (APT should get invoked again and again as long as new source files are generated)
+			}
 		}
 		return true;
  	}
@@ -140,15 +150,17 @@ public class AnnotationProcessor extends AbstractProcessor {
 		} catch (FilerException e) {
 			// the file probably already existed, nothing to do
 			// TODO more concise exception handling
+		} catch (UnresolvedTypeException e) {
+			throw e;
 		} catch (Exception e) {
 			throw new RuntimeException("error creating source file for type: " + enclosingType, e);
 		}
 	}
 	
 	public void emitPropertyDescriptorClass(TypeElement enclosingType, Iterable<PropertyDescriptor> descriptors) throws Exception {
-		JavaFileObject source = filer.createSourceFile(enclosingType.getQualifiedName() + "_");
 		PackageElement pck = (PackageElement) enclosingType.getEnclosingElement();
-		Writer writer = source.openWriter();
+		ByteArrayOutputStream sourceBytes = new ByteArrayOutputStream();
+		Writer writer = new PrintWriter(sourceBytes);
 		writer.write("package " + pck.getQualifiedName() + ";\n\n");
 		writer.write("import com.doctusoft.bean.Property;\n");
 		DeclaredType holderType = (DeclaredType) enclosingType.asType();
@@ -164,12 +176,20 @@ public class AnnotationProcessor extends AbstractProcessor {
 		}
 		writer.write("\n}");
 		writer.close();
+		// open the file only after everything worked fine and the source is ready
+		String fileName = enclosingType.getQualifiedName() + "_";
+		System.out.println("file opened: " + fileName);
+		JavaFileObject source = filer.createSourceFile(fileName);
+		OutputStream os = source.openOutputStream();
+		os.write(sourceBytes.toByteArray());
+		os.close();
 	}
 	
 	public void emitObservableModelClass(TypeElement enclosingType, Iterable<PropertyDescriptor> descriptors) throws Exception {
 		PackageElement pck = (PackageElement) enclosingType.getEnclosingElement();
 		DeclaredType holderType = (DeclaredType) enclosingType.asType();
 		String holderTypeSimpleName = ((TypeElement) holderType.asElement()).getSimpleName().toString();
+		String classToExtend = holderTypeSimpleName;
 		if (!holderTypeSimpleName.endsWith("Raw")) {
 			processingEnv.getMessager().printMessage(Kind.ERROR, "Observable model base class names should end with 'Raw'", enclosingType);
 			return;
@@ -180,14 +200,16 @@ public class AnnotationProcessor extends AbstractProcessor {
 			int parametersCount = holderType.getTypeArguments().size();
 			holderTypeName += "<" + Strings.repeat("?,", parametersCount - 1) + "?>";
 		}
-		JavaFileObject source = filer.createSourceFile(pck.getQualifiedName() + "." + holderTypeSimpleName);
+		String fileName = pck.getQualifiedName() + "." + holderTypeSimpleName;
+		System.out.println("file opened: " + fileName);
+		JavaFileObject source = filer.createSourceFile(fileName);
 		Writer writer = source.openWriter();
 		writer.write("package " + pck.getQualifiedName() + ";\n\n");
 		writer.write("import com.doctusoft.bean.ObservableProperty;\n");
 		writer.write("import com.doctusoft.bean.ListenerRegistration;\n");
 		writer.write("import com.doctusoft.bean.ValueChangeListener;\n");
 		writer.write("import com.doctusoft.bean.internal.PropertyListeners;\n");
-		writer.write("\npublic class " + holderTypeSimpleName + " {\n");
+		writer.write("\npublic class " + holderTypeSimpleName + " extends " + classToExtend + "{\n");
 		for (PropertyDescriptor descriptor : descriptors) {
 			descriptor.setObservable(true);
 			emitFieldAndGetterAndSetter(writer, descriptor);
@@ -206,12 +228,12 @@ public class AnnotationProcessor extends AbstractProcessor {
 		if (fieldTypeName.equals("boolean")) {
 			getterName = "is" + capitalizedFieldName;
 		}
-		writer.write("    private " + fieldTypeName + " " + fieldName + ";\n\n");
-		writer.write("    public " + fieldTypeName + " " + getterName + "() {\n"
-				+ "        return " + fieldName + ";\n"
-				+ "    }\n\n");
+//		writer.write("    private " + fieldTypeName + " " + fieldName + ";\n\n");
+//		writer.write("    public " + fieldTypeName + " " + getterName + "() {\n"
+//				+ "        return " + fieldName + ";\n"
+//				+ "    }\n\n");
 		writer.write("    public void set" + capitalizedFieldName + "(" + fieldTypeName + " " + fieldName + ") {\n"
-				+ "       this." + fieldName + " = " + fieldName + ";\n"
+				+ "       super.set" + capitalizedFieldName + "(" + fieldName + ");\n"
 				+ "       _" + fieldName + ".fireListeners(this, " + fieldName + ");\n"
 				+ "    }\n\n");
 		
@@ -222,13 +244,23 @@ public class AnnotationProcessor extends AbstractProcessor {
 		String fieldTypeName = fieldType.toString();
 		String mappedFieldTypeName = mapPrimitiveTypeNames(fieldTypeName);
 		String fieldTypeLiteral = mappedFieldTypeName;
+		System.out.println("fieldtypeliteral: " + fieldTypeLiteral + " kind: " + fieldType.getKind());
 		if (fieldType.getKind() == TypeKind.DECLARED) {
 			// the field type literal is the type qualified name without the type parameters
 			DeclaredType declaredType = (DeclaredType) fieldType;
 			TypeElement typeElement = (TypeElement) declaredType.asElement();
-			fieldTypeLiteral = typeElement.getQualifiedName().toString();
+			fieldTypeLiteral = ((PackageElement) typeElement.getEnclosingElement()).getQualifiedName() + "." +
+							typeElement.getSimpleName();
 			// the type is present with the type parameters, but if the parameter is a type parameter of the enclosing type, it's replaced with a ? wildcard
 			mappedFieldTypeName = eraseTypeVariables(declaredType);
+		}
+		if (fieldType.getKind() == TypeKind.ERROR) {
+			// if the name contains dots then we assume it to be fully qualified
+			if (!fieldTypeLiteral.contains(".")) {
+				// if it does not, the generated will would probably not compile (if the given type is not in the same package)
+				processingEnv.getMessager().printMessage(Kind.ERROR, "Please use a fully qualified type literal", descriptor.getElement());
+				throw new UnresolvedTypeException();
+			}
 		}
 		String fieldName = descriptor.getFieldName();
 		String capitalizedFieldName = Character.toUpperCase(fieldName.charAt(0)) + fieldName.substring(1);
@@ -300,6 +332,9 @@ public class AnnotationProcessor extends AbstractProcessor {
 					// type parameters of the enclosign type are erased due to the static declaration
 					parameterStrings.add("?");
 				}
+				if (typeMirror.getKind() == TypeKind.ERROR) {
+					parameterStrings.add("?");
+				}
 			}
 			result += "<" + Joiner.on(",").join(parameterStrings) + ">";
 		}
@@ -347,5 +382,9 @@ public class AnnotationProcessor extends AbstractProcessor {
 	
 	public static String mapPrimitiveTypeNames(String typeName) {
 		return Objects.firstNonNull(primitiveTypesMap.get(typeName), typeName);
+	}
+	
+	public class UnresolvedTypeException extends RuntimeException {
+		
 	}
 }

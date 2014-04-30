@@ -1,4 +1,4 @@
-package com.doctusoft.common.core.bean.binding.observable;
+package com.doctusoft.bean.binding.observable;
 
 import java.util.Collection;
 import java.util.Iterator;

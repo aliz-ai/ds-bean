@@ -32,8 +32,9 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.doctusoft.common.core.bean.binding.observable.ObservableSet.SetElementInsertedListener;
-import com.doctusoft.common.core.bean.binding.observable.ObservableSet.SetElementRemovedListener;
+import com.doctusoft.bean.binding.observable.ObservableSet;
+import com.doctusoft.bean.binding.observable.ObservableSet.SetElementInsertedListener;
+import com.doctusoft.bean.binding.observable.ObservableSet.SetElementRemovedListener;
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;

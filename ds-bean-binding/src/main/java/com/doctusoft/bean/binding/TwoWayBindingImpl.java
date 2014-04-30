@@ -1,4 +1,4 @@
-package com.doctusoft.common.core.bean.binding;
+package com.doctusoft.bean.binding;
 
 /*
  * #%L
@@ -23,7 +23,7 @@ package com.doctusoft.common.core.bean.binding;
 
 import com.doctusoft.bean.ListenerRegistration;
 import com.doctusoft.bean.ValueChangeListener;
-import com.doctusoft.common.core.bean.binding.observable.ObservableValueBinding;
+import com.doctusoft.bean.binding.observable.ObservableValueBinding;
 import com.google.common.base.Objects;
 
 public class TwoWayBindingImpl<T> implements BindingRegistration {

@@ -1,4 +1,4 @@
-package com.doctusoft.common.core.bean.binding;
+package com.doctusoft.bean.binding;
 
 /*
  * #%L

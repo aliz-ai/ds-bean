@@ -34,8 +34,9 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.doctusoft.common.core.bean.binding.observable.ObservableMap.MapElementInsertedListener;
-import com.doctusoft.common.core.bean.binding.observable.ObservableMap.MapElementRemovedListener;
+import com.doctusoft.bean.binding.observable.ObservableMap;
+import com.doctusoft.bean.binding.observable.ObservableMap.MapElementInsertedListener;
+import com.doctusoft.bean.binding.observable.ObservableMap.MapElementRemovedListener;
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableMap;

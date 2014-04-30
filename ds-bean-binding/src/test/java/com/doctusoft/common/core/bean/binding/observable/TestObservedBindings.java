@@ -25,8 +25,9 @@ import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 
-import com.doctusoft.common.core.bean.binding.Bindings;
-import com.doctusoft.common.core.bean.binding.Converter;
+import com.doctusoft.bean.binding.Bindings;
+import com.doctusoft.bean.binding.Converter;
+import com.doctusoft.bean.binding.observable.ObservableValueBinding;
 
 public class TestObservedBindings {
 

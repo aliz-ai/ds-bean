@@ -1,4 +1,4 @@
-package com.doctusoft.common.core.bean.binding;
+package com.doctusoft.bean.binding.observable;
 
 /*
  * #%L
@@ -23,24 +23,9 @@ package com.doctusoft.common.core.bean.binding;
 
 import com.doctusoft.bean.ListenerRegistration;
 import com.doctusoft.bean.ValueChangeListener;
-import com.doctusoft.common.core.bean.binding.observable.ObservableValueBinding;
+import com.doctusoft.bean.binding.ValueBinding;
 
-public class OneWayBindingImpl<T> implements BindingRegistration {
-	
-	private ListenerRegistration sourceListener;
+public interface ObservableValueBinding<T> extends ValueBinding<T> {
 
-	public OneWayBindingImpl(ObservableValueBinding<T> sourceBinding, final ValueBinding<T> targetBinding) {
-		sourceListener = sourceBinding.addValueChangeListener(new ValueChangeListener<T>() {
-			@Override
-			public void valueChanged(T newValue) {
-				targetBinding.setValue(newValue);
-			}
-		});
-	}
-	
-	@Override
-	public void unbind() {
-		sourceListener.removeHandler();
-	}
-
+	ListenerRegistration addValueChangeListener(ValueChangeListener<T> listener);
 }

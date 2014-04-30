@@ -21,10 +21,14 @@ package com.doctusoft.common.core.bean.binding.observable;
  */
 
 
+import lombok.Getter;
+import lombok.Setter;
+
 import com.doctusoft.ObservableModel;
 import com.doctusoft.Property;
 
 @ObservableModel
+@Getter @Setter
 public abstract class TestBeanRaw {
 	
 	public static TestBean create(String stringValue) {

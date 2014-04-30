@@ -1,4 +1,4 @@
-package com.doctusoft.common.core.bean.binding.observable;
+package com.doctusoft.bean.binding;
 
 /*
  * #%L
@@ -21,11 +21,10 @@ package com.doctusoft.common.core.bean.binding.observable;
  */
 
 
-import com.doctusoft.bean.ListenerRegistration;
-import com.doctusoft.bean.ValueChangeListener;
-import com.doctusoft.common.core.bean.binding.ValueBinding;
-
-public interface ObservableValueBinding<T> extends ValueBinding<T> {
-
-	ListenerRegistration addValueChangeListener(ValueChangeListener<T> listener);
+public interface ValueBinding<T>  {
+	
+	T getValue();
+	
+	void setValue(T value);
+	
 }

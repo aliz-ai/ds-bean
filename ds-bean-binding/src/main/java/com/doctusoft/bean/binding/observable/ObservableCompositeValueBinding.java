@@ -1,4 +1,4 @@
-package com.doctusoft.common.core.bean.binding.observable;
+package com.doctusoft.bean.binding.observable;
 
 /*
  * #%L
@@ -25,7 +25,7 @@ import java.util.List;
 
 import com.doctusoft.bean.ListenerRegistration;
 import com.doctusoft.bean.ValueChangeListener;
-import com.doctusoft.common.core.bean.binding.CompositeValueBinding;
+import com.doctusoft.bean.binding.CompositeValueBinding;
 import com.google.common.collect.Lists;
 
 public abstract class ObservableCompositeValueBinding<Source, Target> extends CompositeValueBinding<Source, Target> implements ObservableValueBinding<Target>{

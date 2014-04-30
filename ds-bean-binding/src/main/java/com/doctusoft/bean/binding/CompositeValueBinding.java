@@ -1,4 +1,4 @@
-package com.doctusoft.common.core.bean.binding;
+package com.doctusoft.bean.binding;
 
 /*
  * #%L
@@ -21,10 +21,12 @@ package com.doctusoft.common.core.bean.binding;
  */
 
 
-public interface ValueBinding<T>  {
+public abstract class CompositeValueBinding<Source, Target> implements ValueBinding<Target> {
 	
-	T getValue();
-	
-	void setValue(T value);
-	
+	protected final ValueBinding<? extends Source> sourceBinding;
+
+	public CompositeValueBinding(ValueBinding<? extends Source> sourceBinding) {
+		this.sourceBinding = sourceBinding;
+	}
+
 }

@@ -1,4 +1,4 @@
-package com.doctusoft.common.core.bean.binding.observable;
+package com.doctusoft.bean.binding.observable;
 
 /*
  * #%L
@@ -23,28 +23,35 @@ package com.doctusoft.common.core.bean.binding.observable;
 
 import com.doctusoft.bean.ListenerRegistration;
 import com.doctusoft.bean.ValueChangeListener;
-import com.doctusoft.common.core.bean.binding.Bindings;
-import com.doctusoft.common.core.bean.binding.ValueBinding;
 
-public class ObservableValueBindingBuilder<T> implements ObservableValueBinding<T> {
+/**
+ * Well, quite an oximoron, but I hope you get the idea :) 
+ */
+public class ObservableConstantValueBinding<Root> implements ObservableValueBinding<Root> {
 
-	protected ObservableValueBinding<T> source;
-	
-	@Override
-	public ListenerRegistration addValueChangeListener(ValueChangeListener<T> listener) {
-		return source.addValueChangeListener(listener);
-	}
-	
-	public void bindTo(final ValueBinding<T> targetBinding) {
-		Bindings.bind(this, targetBinding);
+	private final Root root;
+
+	public ObservableConstantValueBinding(Root root) {
+		this.root = root;
 	}
 	
 	@Override
-	public T getValue() {
-		return source.getValue();
+	public Root getValue() {
+		return root;
 	}
 	
-	public void setValue(T value) {
-		source.setValue(value);
+	public void setValue(Root value) {
+		throw new UnsupportedOperationException("Root value binding cannot be assigned");
+	}
+	
+	@Override
+	public ListenerRegistration addValueChangeListener(ValueChangeListener<Root> listener) {
+		// do nothing, it's never invoked
+		return new ListenerRegistration() {
+			@Override
+			public void removeHandler() {
+				// do nothing
+			}
+		};
 	}
 }

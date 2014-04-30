@@ -1,4 +1,4 @@
-package com.doctusoft.common.core.bean.binding;
+package com.doctusoft.bean.binding;
 
 /*
  * #%L
@@ -21,24 +21,26 @@ package com.doctusoft.common.core.bean.binding;
  */
 
 
-import com.doctusoft.bean.Property;
+import com.doctusoft.bean.ListenerRegistration;
+import com.doctusoft.bean.ValueChangeListener;
+import com.doctusoft.bean.binding.observable.ObservableValueBinding;
 
-public class AttributeCompositeValueBinding<Source, Target> extends CompositeValueBinding<Source, Target> {
+public class OneWayBindingImpl<T> implements BindingRegistration {
 	
-	private final Property<? super Source, Target> attribute;
+	private ListenerRegistration sourceListener;
 
-	public AttributeCompositeValueBinding(ValueBinding<? extends Source> sourceBinding, Property<? super Source, Target> attribute) {
-		super(sourceBinding);
-		this.attribute = attribute;
+	public OneWayBindingImpl(ObservableValueBinding<T> sourceBinding, final ValueBinding<T> targetBinding) {
+		sourceListener = sourceBinding.addValueChangeListener(new ValueChangeListener<T>() {
+			@Override
+			public void valueChanged(T newValue) {
+				targetBinding.setValue(newValue);
+			}
+		});
 	}
 	
 	@Override
-	public Target getValue() {
-		return attribute.getValue((Source)sourceBinding.getValue());
-	}
-	
-	public void setValue(Target value) {
-		attribute.setValue(sourceBinding.getValue(), value);
+	public void unbind() {
+		sourceListener.removeHandler();
 	}
 
 }

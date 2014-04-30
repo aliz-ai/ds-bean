@@ -1,4 +1,4 @@
-package com.doctusoft.common.core.bean.binding;
+package com.doctusoft.bean.binding;
 
 /*
  * #%L
@@ -21,21 +21,24 @@ package com.doctusoft.common.core.bean.binding;
  */
 
 
-public class ConstantValueBinding<Root> implements ValueBinding<Root> {
+import com.doctusoft.bean.Property;
 
-	private final Root root;
+public class AttributeCompositeValueBinding<Source, Target> extends CompositeValueBinding<Source, Target> {
+	
+	private final Property<? super Source, Target> attribute;
 
-	public ConstantValueBinding(Root root) {
-		this.root = root;
+	public AttributeCompositeValueBinding(ValueBinding<? extends Source> sourceBinding, Property<? super Source, Target> attribute) {
+		super(sourceBinding);
+		this.attribute = attribute;
 	}
 	
 	@Override
-	public Root getValue() {
-		return root;
+	public Target getValue() {
+		return attribute.getValue((Source)sourceBinding.getValue());
 	}
 	
-	public void setValue(Root value) {
-		throw new UnsupportedOperationException("Root value binding cannot be assigned");
+	public void setValue(Target value) {
+		attribute.setValue(sourceBinding.getValue(), value);
 	}
-	
+
 }

@@ -1,4 +1,4 @@
-package com.doctusoft.common.core.bean.binding;
+package com.doctusoft.bean.binding;
 
 /*
  * #%L
@@ -21,6 +21,10 @@ package com.doctusoft.common.core.bean.binding;
  */
 
 
-public interface BindingRegistration {
-	public void unbind();
+public interface Converter<Source, Target> {
+	
+	Target convertSource(Source source);
+	
+	Source convertTarget(Target target);
+
 }

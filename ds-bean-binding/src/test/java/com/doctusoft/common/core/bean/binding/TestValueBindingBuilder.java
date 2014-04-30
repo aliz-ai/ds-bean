@@ -25,6 +25,10 @@ import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 
+import com.doctusoft.bean.binding.Bindings;
+import com.doctusoft.bean.binding.Converter;
+import com.doctusoft.bean.binding.ValueBinding;
+
 public class TestValueBindingBuilder {
 
 	@Test

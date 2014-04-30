@@ -1,4 +1,4 @@
-package com.doctusoft.common.core.bean.binding.observable;
+package com.doctusoft.bean.binding.observable;
 
 /*
  * #%L
@@ -22,7 +22,7 @@ package com.doctusoft.common.core.bean.binding.observable;
 
 
 import com.doctusoft.bean.ObservableProperty;
-import com.doctusoft.common.core.bean.binding.Converter;
+import com.doctusoft.bean.binding.Converter;
 
 public class ObservableChainedValueBindingBuilder<T> extends ObservableValueBindingBuilder<T> {
 	
