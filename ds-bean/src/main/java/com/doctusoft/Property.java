@@ -2,7 +2,7 @@ package com.doctusoft;
 
 /*
  * #%L
- * ds-bean-apt
+ * ds-bean
  * %%
  * Copyright (C) 2014 Doctusoft Ltd.
  * %%
