@@ -1,5 +1,5 @@
 <factorypath>
-    <factorypathentry kind="WKSPJAR" id="/ds-bean-apt/target/ds-bean-apt-0.2.0-SNAPSHOT.jar" enabled="true" runInBatchMode="false"/>
     <factorypathentry kind="EXTJAR" id="C:\Users\Gábor\.m2\repository\com\google\guava\guava\16.0.1\guava-16.0.1.jar" enabled="true" runInBatchMode="false"/>
-    <factorypathentry kind="EXTJAR" id="C:\Users\Gábor\.m2\repository\com\doctusoft\ds-bean\0.2.0-SNAPSHOT\ds-bean-0.2.0-SNAPSHOT.jar" enabled="true" runInBatchMode="false"/>
+    <factorypathentry kind="WKSPJAR" id="/ds-bean/target/ds-bean-0.2.0-SNAPSHOT.jar" enabled="true" runInBatchMode="false"/>
+    <factorypathentry kind="EXTJAR" id="C:\Users\Gábor\.m2\repository\com\doctusoft\ds-bean-apt\0.2.0-SNAPSHOT\ds-bean-apt-0.2.0-SNAPSHOT.jar" enabled="true" runInBatchMode="false"/>
 </factorypath>

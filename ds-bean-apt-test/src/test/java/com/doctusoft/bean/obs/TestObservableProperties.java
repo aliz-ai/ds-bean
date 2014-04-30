@@ -37,7 +37,7 @@ public class TestObservableProperties {
 	@Test
 	public void testStringField() {
 		Person person = new Person();
-		ObservableProperty<Person, String> nameProperty = Person._name;
+		ObservableProperty<Person, String> nameProperty = Person_._name;
 		assertEquals("name", nameProperty.getName());
 		assertEquals(String.class, nameProperty.getType());
 		assertEquals(Person.class, nameProperty.getParent());
@@ -59,7 +59,7 @@ public class TestObservableProperties {
 	@Test
 	public void testIntField() {
 		Person person = new Person();
-		ObservableProperty<Person, Integer> yearProperty = Person._birthYear;
+		ObservableProperty<Person, Integer> yearProperty = Person_._birthYear;
 		assertEquals("birthYear", yearProperty.getName());
 		assertEquals(Integer.class, yearProperty.getType());
 		assertEquals(Person.class, yearProperty.getParent());
@@ -80,7 +80,7 @@ public class TestObservableProperties {
 	@Test
 	public void testBooleanField() {
 		Person person = new Person();
-		ObservableProperty<Person, Boolean> residentProperty = Person._resident;
+		ObservableProperty<Person, Boolean> residentProperty = Person_._resident;
 		assertEquals("resident", residentProperty.getName());
 		assertEquals(Boolean.class, residentProperty.getType());
 		assertEquals(Person.class, residentProperty.getParent());

@@ -47,7 +47,7 @@ import javax.lang.model.type.TypeMirror;
 import javax.tools.Diagnostic.Kind;
 import javax.tools.JavaFileObject;
 
-import com.doctusoft.ObservableModel;
+import com.doctusoft.ObservableProperty;
 import com.doctusoft.Property;
 import com.google.common.base.Joiner;
 import com.google.common.base.Objects;
@@ -57,7 +57,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 
-@SupportedAnnotationTypes({"com.doctusoft.Property", "com.doctusoft.ObservableModel"})
+@SupportedAnnotationTypes({"com.doctusoft.Property", "com.doctusoft.ObservableProperty"})
 public class AnnotationProcessor extends AbstractProcessor {
 	
 	/**
@@ -70,18 +70,31 @@ public class AnnotationProcessor extends AbstractProcessor {
 	@Override
 	public boolean process(Set<? extends TypeElement> annotations,
 			RoundEnvironment roundEnv) {
-		System.out.println("INVOKING APT");
-		// collect data
+		// collect annotations and their elements
+		List<PropertyDescriptor> descriptors = Lists.newArrayList();
 		for (Element element : roundEnv.getElementsAnnotatedWith(com.doctusoft.Property.class)) {
+			PropertyDescriptor descriptor = new PropertyDescriptor();
+			descriptor.setElement(element);
+			descriptor.setReadonly(element.getAnnotation(Property.class).readonly());
+			descriptors.add(descriptor);
+		}
+		for (Element element : roundEnv.getElementsAnnotatedWith(ObservableProperty.class)) {
+			PropertyDescriptor descriptor = new PropertyDescriptor();
+			descriptor.setElement(element);
+			descriptor.setReadonly(element.getAnnotation(ObservableProperty.class).readonly());
+			descriptor.setObservable(true);
+			descriptors.add(descriptor);
+		}
+		// extract some more data
+		for (PropertyDescriptor descriptor : descriptors) {
+			Element element = descriptor.getElement();
 			if (element.getKind() == ElementKind.CLASS) {
 				// TODO handle all fields and / or getters of the class
 			}
 			if (element.getKind() == ElementKind.FIELD) {
 				VariableElement variableElement = (VariableElement) element;
-				PropertyDescriptor descriptor = new PropertyDescriptor();
 				descriptor.setFieldName(element.getSimpleName().toString());
 				descriptor.setFieldType(variableElement.asType());
-				descriptor.setReadonly(element.getAnnotation(Property.class).readonly());
 				descriptor.setElement(element);
 				Element enclosingElement = variableElement.getEnclosingElement();
 				attributeDescriptors.put((TypeElement) enclosingElement, descriptor);
@@ -94,16 +107,15 @@ public class AnnotationProcessor extends AbstractProcessor {
 					processingEnv.getMessager().printMessage(Kind.ERROR, "@Property must be on a getter method", methodElement);
 				}
 				fieldName = Character.toLowerCase(fieldName.charAt(0)) + fieldName.substring(1);
-				PropertyDescriptor descriptor = new PropertyDescriptor();
 				descriptor.setFieldName(fieldName);
 				ExecutableType type = (ExecutableType) methodElement.asType();
 				descriptor.setFieldType(type.getReturnType());
-				descriptor.setReadonly(element.getAnnotation(Property.class).readonly());
 				descriptor.setElement(element);
 				Element enclosingElement = methodElement.getEnclosingElement();
 				attributeDescriptors.put((TypeElement) enclosingElement, descriptor); 
 			}
 		}
+		// emit source files
 		filer = processingEnv.getFiler();
 		for (TypeElement typeElement : attributeDescriptors.keySet()) {
 			try {
@@ -139,14 +151,8 @@ public class AnnotationProcessor extends AbstractProcessor {
 	
 	public void emitClassSource(TypeElement enclosingType, Iterable<PropertyDescriptor> descriptors) {
 		try {
-			ObservableModel observableModel = enclosingType.getAnnotation(ObservableModel.class);
-			if (observableModel == null) {
-				// generate simple "MyClass_" named static descriptor class
-				emitPropertyDescriptorClass(enclosingType, descriptors);
-			} else {
-				// generate an observable model class
-				emitObservableModelClass(enclosingType, descriptors);
-			}
+			// generate simple "MyClass_" named static descriptor class
+			emitPropertyDescriptorClass(enclosingType, descriptors);
 		} catch (FilerException e) {
 			// the file probably already existed, nothing to do
 			// TODO more concise exception handling
@@ -163,6 +169,11 @@ public class AnnotationProcessor extends AbstractProcessor {
 		Writer writer = new PrintWriter(sourceBytes);
 		writer.write("package " + pck.getQualifiedName() + ";\n\n");
 		writer.write("import com.doctusoft.bean.Property;\n");
+		writer.write("import com.doctusoft.bean.ObservableProperty;\n");
+		writer.write("import com.doctusoft.bean.ListenerRegistration;\n");
+		writer.write("import com.doctusoft.bean.ValueChangeListener;\n");
+		writer.write("import com.doctusoft.bean.internal.PropertyListeners;\n");
+		writer.write("import com.doctusoft.bean.internal.WeakReferenceListeners;\n");
 		DeclaredType holderType = (DeclaredType) enclosingType.asType();
 		String holderTypeSimpleName = ((TypeElement) holderType.asElement()).getSimpleName().toString();
 		String holderTypeName = holderTypeSimpleName;
@@ -178,65 +189,10 @@ public class AnnotationProcessor extends AbstractProcessor {
 		writer.close();
 		// open the file only after everything worked fine and the source is ready
 		String fileName = enclosingType.getQualifiedName() + "_";
-		System.out.println("file opened: " + fileName);
 		JavaFileObject source = filer.createSourceFile(fileName);
 		OutputStream os = source.openOutputStream();
 		os.write(sourceBytes.toByteArray());
 		os.close();
-	}
-	
-	public void emitObservableModelClass(TypeElement enclosingType, Iterable<PropertyDescriptor> descriptors) throws Exception {
-		PackageElement pck = (PackageElement) enclosingType.getEnclosingElement();
-		DeclaredType holderType = (DeclaredType) enclosingType.asType();
-		String holderTypeSimpleName = ((TypeElement) holderType.asElement()).getSimpleName().toString();
-		String classToExtend = holderTypeSimpleName;
-		if (!holderTypeSimpleName.endsWith("Raw")) {
-			processingEnv.getMessager().printMessage(Kind.ERROR, "Observable model base class names should end with 'Raw'", enclosingType);
-			return;
-		}
-		holderTypeSimpleName = holderTypeSimpleName.substring(0, holderTypeSimpleName.length() - 3);
-		String holderTypeName = holderTypeSimpleName;
-		if (!holderType.getTypeArguments().isEmpty()) {
-			int parametersCount = holderType.getTypeArguments().size();
-			holderTypeName += "<" + Strings.repeat("?,", parametersCount - 1) + "?>";
-		}
-		String fileName = pck.getQualifiedName() + "." + holderTypeSimpleName;
-		System.out.println("file opened: " + fileName);
-		JavaFileObject source = filer.createSourceFile(fileName);
-		Writer writer = source.openWriter();
-		writer.write("package " + pck.getQualifiedName() + ";\n\n");
-		writer.write("import com.doctusoft.bean.ObservableProperty;\n");
-		writer.write("import com.doctusoft.bean.ListenerRegistration;\n");
-		writer.write("import com.doctusoft.bean.ValueChangeListener;\n");
-		writer.write("import com.doctusoft.bean.internal.PropertyListeners;\n");
-		writer.write("\npublic class " + holderTypeSimpleName + " extends " + classToExtend + "{\n");
-		for (PropertyDescriptor descriptor : descriptors) {
-			descriptor.setObservable(true);
-			emitFieldAndGetterAndSetter(writer, descriptor);
-			emitPropertyLiteral(writer, descriptor, holderTypeName, holderTypeSimpleName);
-		}
-		writer.write("\n}");
-		writer.close();
-	}
-	
-	public void emitFieldAndGetterAndSetter(Writer writer, PropertyDescriptor descriptor) throws Exception {
-		TypeMirror fieldType = descriptor.getFieldType();
-		String fieldTypeName = fieldType.toString();
-		String fieldName = descriptor.getFieldName();
-		String capitalizedFieldName = Character.toUpperCase(fieldName.charAt(0)) + fieldName.substring(1);
-		String getterName = "get" + capitalizedFieldName;
-		if (fieldTypeName.equals("boolean")) {
-			getterName = "is" + capitalizedFieldName;
-		}
-//		writer.write("    private " + fieldTypeName + " " + fieldName + ";\n\n");
-//		writer.write("    public " + fieldTypeName + " " + getterName + "() {\n"
-//				+ "        return " + fieldName + ";\n"
-//				+ "    }\n\n");
-		writer.write("    public void set" + capitalizedFieldName + "(" + fieldTypeName + " " + fieldName + ") {\n"
-				+ "       super.set" + capitalizedFieldName + "(" + fieldName + ");\n"
-				+ "       _" + fieldName + ".fireListeners(this, " + fieldName + ");\n"
-				+ "    }\n\n");
-		
 	}
 	
 	public void emitPropertyLiteral(Writer writer, PropertyDescriptor descriptor, String holderTypeName, String holderTypeSimpleName) throws Exception {
@@ -244,7 +200,6 @@ public class AnnotationProcessor extends AbstractProcessor {
 		String fieldTypeName = fieldType.toString();
 		String mappedFieldTypeName = mapPrimitiveTypeNames(fieldTypeName);
 		String fieldTypeLiteral = mappedFieldTypeName;
-		System.out.println("fieldtypeliteral: " + fieldTypeLiteral + " kind: " + fieldType.getKind());
 		if (fieldType.getKind() == TypeKind.DECLARED) {
 			// the field type literal is the type qualified name without the type parameters
 			DeclaredType declaredType = (DeclaredType) fieldType;
@@ -270,18 +225,16 @@ public class AnnotationProcessor extends AbstractProcessor {
 		}
 		String setterName = "set" + capitalizedFieldName;
 		String interfaceToImplement = descriptor.isObservable()?"ObservableProperty":"Property";
-		String listenersName = "_" + fieldName + "_listeners";
-		if (descriptor.isObservable()) {
-			
-			writer.write("        private PropertyListeners<" + mappedFieldTypeName + "> " + listenersName + " = new PropertyListeners<" + mappedFieldTypeName + ">();\n");
-			
-		}
+		String listenersName = "listeners";
 		writer.write("    public static final " + interfaceToImplement + "<"
 				+ holderTypeName + "," + mappedFieldTypeName + "> _" + fieldName + " = \n"
 						+ "    new " + interfaceToImplement + "<" + holderTypeName + "," + mappedFieldTypeName + ">() {\n"
 						+ "    @Override public " + mappedFieldTypeName + " getValue(" + holderTypeName + " instance) {\n"
 						+ "        return (" + fieldTypeLiteral + ") instance." + getterName + "();\n"
 						+ "    }\n");
+		if (descriptor.isObservable()) {
+			writer.write("        private final WeakReferenceListeners<" + holderTypeName + "," + mappedFieldTypeName + "> " + listenersName + " = new WeakReferenceListeners<" + holderTypeName + "," + mappedFieldTypeName + ">();\n");
+		}
 		if (!descriptor.isReadonly()) {
 			writer.write(
 					"    @Override public void setValue(" + holderTypeName + " instance, " + mappedFieldTypeName + " value) {\n"
@@ -296,10 +249,10 @@ public class AnnotationProcessor extends AbstractProcessor {
 		}
 		if (descriptor.isObservable()) {
 			writer.write("        @Override public ListenerRegistration addChangeListener(" + holderTypeName + " object, ValueChangeListener<" + mappedFieldTypeName + "> valueChangeListener) {\n"
-					   + "            return object." + listenersName + ".addListener(valueChangeListener);\n"
+					   + "            return " + listenersName + ".addListener(object, valueChangeListener);\n"
 					   + "        }\n");
 			writer.write("        @Override public void fireListeners(" + holderTypeName + " object, " + mappedFieldTypeName + " newValue) {\n"
-					   + "            object." + listenersName + ".fireListeners(newValue);\n"
+					   + "            " + listenersName + ".fireListeners(object, newValue);\n"
 					   + "        }\n");
 		}
 		writer.write(
@@ -341,33 +294,6 @@ public class AnnotationProcessor extends AbstractProcessor {
 		return result;
 	}
 	
-	
-//	public boolean isSetterPresenet(TypeElement type, String setterName, String typeName) {
-//		System.out.println("looking for setter: " + setterName + ", "+ typeName);
-//		// look for declared methods
-//		// TODO do we have to look in supertypes? Is there a utility for this maybe?
-//		for (Element element: type.getEnclosedElements()) {
-//			if (element.getKind() == ElementKind.METHOD) {
-//				System.out.println("checking method: " + element);
-//				ExecutableElement methodElement = (ExecutableElement) element;
-//				// check method name
-//				if (!methodElement.getSimpleName().equals(setterName))
-//					continue;
-//				// return type void
-//				if (!"void".equals(methodElement.getReturnType().toString()))
-//					continue;
-//				// parameter count
-//				List<? extends VariableElement> parameters = methodElement.getParameters();
-//				if (parameters.size() != 1)
-//					continue;
-//				// parameter types
-//				VariableElement variableElement = parameters.get(0);
-//				if (typeName.equals(variableElement.asType().toString()))
-//					return true;
-//			}
-//		}
-//		return false;
-//	}
 	
 	public static final Map<String, String> primitiveTypesMap = ImmutableMap.<String, String>builder()
 			.put("boolean", "Boolean")

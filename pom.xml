@@ -16,7 +16,7 @@
 
 	<properties>
 		<version.guava>16.0.1</version.guava>
-		<lombok.ds.version>0.1.6</lombok.ds.version>
+		<lombok.ds.version>0.2.0</lombok.ds.version>
 
 		<version.maven.clean.plugin>2.5</version.maven.clean.plugin>
 		<version.maven.install.plugin>2.4</version.maven.install.plugin>
@@ -139,7 +139,11 @@
 		</dependencies>
 	</dependencyManagement>
 	
-		<repositories>
+	<repositories>
+		<repository>
+			<id>doctusoft.releases.public</id>
+			<url>http://pubrepo.doctusoft.com/nexus/content/repositories/releases</url>
+		</repository>
 		<repository>
 			<id>ds-thirdparty</id>
 			<url>http://repo.doctusoft.com/nexus/content/repositories/thirdparty</url>

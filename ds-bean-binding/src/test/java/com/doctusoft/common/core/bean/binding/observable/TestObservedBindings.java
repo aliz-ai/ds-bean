@@ -48,8 +48,8 @@ public class TestObservedBindings {
 	@Test
 	public void testSimpleAttributeValueBinding() {
 		String string = "hello world";
-		TestBean testBean = TestBeanRaw.create(string);
-		ObservableValueBinding<String> binding = Bindings.obs(testBean).get(TestBean._stringValue);
+		TestBean testBean = new TestBean(string);
+		ObservableValueBinding<String> binding = Bindings.obs(testBean).get(TestBean_._stringValue);
 		assertEquals(string, binding.getValue());
 		String newvalue = "newvalue";
 		binding.setValue(newvalue);
@@ -59,11 +59,11 @@ public class TestObservedBindings {
 	@Test
 	public void testChainedAttributeValueBinding() {
 		String string = "hello world";
-		TestContainerBean testContainerBean = TestContainerBeanRaw.create(TestBeanRaw.create(string));
+		TestContainerBean testContainerBean = new TestContainerBean(new TestBean(string));
 		ObservableValueBinding<String> binding = Bindings
 				.obs(testContainerBean)
-				.get(TestContainerBean._testBean)
-				.get(TestBean._stringValue);
+				.get(TestContainerBean_._testBean)
+				.get(TestBean_._stringValue);
 		assertEquals(string, binding.getValue());
 		String newvalue = "newvalue";
 		binding.setValue(newvalue);
@@ -73,10 +73,10 @@ public class TestObservedBindings {
 	@Test
 	public void testConvertingValueBinding() {
 		String string = "1";
-		TestBean testBean = TestBeanRaw.create(string);
+		TestBean testBean = new TestBean(string);
 		ObservableValueBinding<Integer> binding = Bindings
 					.obs(testBean)
-					.get(TestBean._stringValue)
+					.get(TestBean_._stringValue)
 					.convert(new DummyConverter());
 		assertEquals(new Integer(1), binding.getValue());
 		binding.setValue(2);

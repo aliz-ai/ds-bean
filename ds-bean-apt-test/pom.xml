@@ -45,9 +45,8 @@
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>org.projectlombok</groupId>
-			<artifactId>lombok</artifactId>
-			<version>1.12.6</version>
+			<groupId>com.doctusoft</groupId>
+			<artifactId>lombok-ds</artifactId>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
