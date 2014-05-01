@@ -27,8 +27,13 @@ import java.util.Map;
 import lombok.Getter;
 import lombok.Setter;
 
+import com.doctusoft.Property;
+
 @Getter @Setter
 public class GenericBean<T> {
+	
+	@Property
+	private T genericField;
 	
 	@com.doctusoft.Property
 	private Map<String, T> genericMapField;

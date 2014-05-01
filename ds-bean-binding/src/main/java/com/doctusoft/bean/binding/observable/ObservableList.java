@@ -25,12 +25,13 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
-import java.util.NoSuchElementException;
 import java.util.RandomAccess;
 
 import com.doctusoft.bean.GenericListeners;
 import com.doctusoft.bean.ListenerRegistration;
+import com.google.common.collect.ForwardingIterator;
 import com.google.common.collect.ForwardingList;
+import com.google.common.collect.ForwardingListIterator;
 import com.google.common.collect.Lists;
 
 public class ObservableList<T> extends ForwardingList<T> implements RandomAccess {
@@ -181,6 +182,13 @@ public class ObservableList<T> extends ForwardingList<T> implements RandomAccess
 	}
 	
 	/**
+	 * Invoke it before actually removing the item 
+	 */
+	protected void fireRemoveListenersFor(T value) {
+		removeListeners.fireEvent(this, indexOf(value), value);
+	}
+	
+	/**
 	 * This works semantically correctly, but this actually copies the given sublist, so it probably doesn't work as fast
 	 *  as standard JRE classes.
 	 */
@@ -193,43 +201,66 @@ public class ObservableList<T> extends ForwardingList<T> implements RandomAccess
 	
 	@Override 
 	public ListIterator<T> listIterator() {
-		throw new UnsupportedOperationException(); // TODO
+		return new ObservableListIterator(super.listIterator());
 	}
 	
 	@Override 
 	public ListIterator<T> listIterator(int index) {
-		throw new UnsupportedOperationException();
+		return new ObservableListIterator(super.listIterator(index));
+	}
+	
+	protected class ObservableListIterator extends ForwardingListIterator<T> {
+		private ListIterator<T> delegate;
+		private T lastReturned;
+		public ObservableListIterator(ListIterator<T> delegate) {
+			this.delegate = delegate;
+		}
+		@Override
+		protected ListIterator<T> delegate() {
+			return delegate;
+		}
+		@Override
+		public T next() {
+			lastReturned = super.next();
+			return lastReturned;
+		}
+		@Override
+		public T previous() {
+			lastReturned = super.previous();
+			return lastReturned;
+		}
+		@Override
+		public void add(T element) {
+			super.add(element);
+			insertListeners.fireEvent(ObservableList.this, indexOf(element), element);
+		}
+		@Override
+		public void remove() {
+			fireRemoveListenersFor(lastReturned);
+			super.remove();
+		}
 	}
 
 	@Override
 	public Iterator<T> iterator() {
-		return new Iterator<T>() {
-			private int index = 0;
-			private int lastReturned = -1;
-			
+		return new ForwardingIterator<T>() {
+			Iterator<T> delegate = ObservableList.super.iterator();
 			@Override
-			public boolean hasNext() {
-				return delegate.size() > index;
+			protected Iterator<T> delegate() {
+				return delegate;
 			}
-
+			T lastReturned;
 			@Override
 			public T next() {
-				if(!hasNext()) {
-					throw new NoSuchElementException();
-				}
-				lastReturned = index;
-				return delegate.get(index++);
+				lastReturned = super.next();
+				return lastReturned;
 			}
-
 			@Override
 			public void remove() {
-				if (lastReturned < 0) {
-					throw new IllegalStateException();
-				}
-				ObservableList.this.remove(lastReturned); // triggers the handlers
-				index--;
-				lastReturned = -1;
+				fireRemoveListenersFor(lastReturned);
+				super.remove();
 			}
+			
 		};
 	}
 }

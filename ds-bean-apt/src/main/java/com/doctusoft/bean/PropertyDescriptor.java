@@ -21,21 +21,14 @@ package com.doctusoft.bean;
  */
 
 
-import javax.lang.model.element.Element;
-import javax.lang.model.type.TypeMirror;
-
 import lombok.Data;
 
 @Data
-public class PropertyDescriptor {
-	
-	private TypeMirror fieldType;
+public class PropertyDescriptor extends ElementDescriptor {
 	
 	private String fieldName;
 
 	private boolean readonly;
-	
-	private Element element;
 	
 	private boolean observable;
 }

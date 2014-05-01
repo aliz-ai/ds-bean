@@ -47,6 +47,7 @@ import javax.lang.model.type.TypeMirror;
 import javax.tools.Diagnostic.Kind;
 import javax.tools.JavaFileObject;
 
+import com.doctusoft.MethodRef;
 import com.doctusoft.ObservableProperty;
 import com.doctusoft.Property;
 import com.google.common.base.Joiner;
@@ -57,14 +58,18 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 
-@SupportedAnnotationTypes({"com.doctusoft.Property", "com.doctusoft.ObservableProperty"})
+@SupportedAnnotationTypes({"com.doctusoft.Property", "com.doctusoft.ObservableProperty", "com.doctusoft.MethodRef"})
 public class AnnotationProcessor extends AbstractProcessor {
 	
 	/**
 	 * Property descriptors by class typename
 	 */
-	private Multimap<TypeElement, PropertyDescriptor> attributeDescriptors = ArrayListMultimap.create();
-	private Filer filer; 
+	private Multimap<TypeElement, ElementDescriptor> elementDescriptors = ArrayListMultimap.create();
+	private Filer filer;
+	/**
+	 * if it's a type parameter
+	 */
+	private String currentFieldTypeName = null;
 	
 	
 	@Override
@@ -94,10 +99,10 @@ public class AnnotationProcessor extends AbstractProcessor {
 			if (element.getKind() == ElementKind.FIELD) {
 				VariableElement variableElement = (VariableElement) element;
 				descriptor.setFieldName(element.getSimpleName().toString());
-				descriptor.setFieldType(variableElement.asType());
+				descriptor.setType(variableElement.asType());
 				descriptor.setElement(element);
 				Element enclosingElement = variableElement.getEnclosingElement();
-				attributeDescriptors.put((TypeElement) enclosingElement, descriptor);
+				elementDescriptors.put((TypeElement) enclosingElement, descriptor);
 			}
 			if (element.getKind() == ElementKind.METHOD) {
 				ExecutableElement methodElement = (ExecutableElement) element;
@@ -109,17 +114,27 @@ public class AnnotationProcessor extends AbstractProcessor {
 				fieldName = Character.toLowerCase(fieldName.charAt(0)) + fieldName.substring(1);
 				descriptor.setFieldName(fieldName);
 				ExecutableType type = (ExecutableType) methodElement.asType();
-				descriptor.setFieldType(type.getReturnType());
+				descriptor.setType(type.getReturnType());
 				descriptor.setElement(element);
 				Element enclosingElement = methodElement.getEnclosingElement();
-				attributeDescriptors.put((TypeElement) enclosingElement, descriptor); 
+				elementDescriptors.put((TypeElement) enclosingElement, descriptor); 
 			}
+		}
+		for (Element element: roundEnv.getElementsAnnotatedWith(MethodRef.class)) {
+			MethodDescriptor descriptor = new MethodDescriptor();
+			ExecutableElement methodElement = (ExecutableElement) element;
+			TypeMirror type = (TypeMirror) methodElement.getReturnType();
+			descriptor.setType(type);
+			descriptor.setElement(methodElement);
+			descriptor.setMethodName(methodElement.getSimpleName().toString());
+			Element enclosingElement = methodElement.getEnclosingElement();
+			elementDescriptors.put((TypeElement) enclosingElement, descriptor);
 		}
 		// emit source files
 		filer = processingEnv.getFiler();
-		for (TypeElement typeElement : attributeDescriptors.keySet()) {
+		for (TypeElement typeElement : elementDescriptors.keySet()) {
 			try {
-				emitClassSource(typeElement, attributeDescriptors.get(typeElement));
+				emitClassSource(typeElement, elementDescriptors.get(typeElement));
 			} catch (UnresolvedTypeException e) {
 				// do nothing, we will not emit this source file, hoping that in the next round we'll succeed
 				// (APT should get invoked again and again as long as new source files are generated)
@@ -149,7 +164,7 @@ public class AnnotationProcessor extends AbstractProcessor {
 		return null;	// this is not a getter
 	}
 	
-	public void emitClassSource(TypeElement enclosingType, Iterable<PropertyDescriptor> descriptors) {
+	public void emitClassSource(TypeElement enclosingType, Iterable<ElementDescriptor> descriptors) {
 		try {
 			// generate simple "MyClass_" named static descriptor class
 			emitPropertyDescriptorClass(enclosingType, descriptors);
@@ -163,7 +178,7 @@ public class AnnotationProcessor extends AbstractProcessor {
 		}
 	}
 	
-	public void emitPropertyDescriptorClass(TypeElement enclosingType, Iterable<PropertyDescriptor> descriptors) throws Exception {
+	public void emitPropertyDescriptorClass(TypeElement enclosingType, Iterable<ElementDescriptor> descriptors) throws Exception {
 		PackageElement pck = (PackageElement) enclosingType.getEnclosingElement();
 		ByteArrayOutputStream sourceBytes = new ByteArrayOutputStream();
 		Writer writer = new PrintWriter(sourceBytes);
@@ -173,7 +188,6 @@ public class AnnotationProcessor extends AbstractProcessor {
 		writer.write("import com.doctusoft.bean.ListenerRegistration;\n");
 		writer.write("import com.doctusoft.bean.ValueChangeListener;\n");
 		writer.write("import com.doctusoft.bean.internal.PropertyListeners;\n");
-		writer.write("import com.doctusoft.bean.internal.WeakReferenceListeners;\n");
 		DeclaredType holderType = (DeclaredType) enclosingType.asType();
 		String holderTypeSimpleName = ((TypeElement) holderType.asElement()).getSimpleName().toString();
 		String holderTypeName = holderTypeSimpleName;
@@ -182,8 +196,13 @@ public class AnnotationProcessor extends AbstractProcessor {
 			holderTypeName += "<" + Strings.repeat("?,", parametersCount - 1) + "?>";
 		}
 		writer.write("\npublic class " + holderTypeSimpleName + "_ {\n");
-		for (PropertyDescriptor descriptor : descriptors) {
-			emitPropertyLiteral(writer, descriptor, holderTypeName, holderTypeSimpleName);
+		for (ElementDescriptor descriptor : descriptors) {
+			if (descriptor instanceof PropertyDescriptor) {
+				emitPropertyLiteral(writer, (PropertyDescriptor) descriptor, holderType, holderTypeSimpleName);
+			}
+			if (descriptor instanceof MethodDescriptor) {
+				emitMethodLiteral(writer, (MethodDescriptor) descriptor, holderTypeName, holderTypeSimpleName);
+			}
 		}
 		writer.write("\n}");
 		writer.close();
@@ -194,12 +213,59 @@ public class AnnotationProcessor extends AbstractProcessor {
 		os.write(sourceBytes.toByteArray());
 		os.close();
 	}
+
+	public void emitMethodLiteral(Writer writer, MethodDescriptor descriptor, String holderTypeName, String holderTypeSimpleName) throws Exception {
+		ExecutableElement methodElement = (ExecutableElement) descriptor.getElement();
+		int numParams = methodElement.getParameters().size();
+		String staticClassName = "com.doctusoft.bean.ParametricClassMethodReferences.ClassMethodReference" + numParams;
+		TypeMirror methodType = descriptor.getType();
+		String typeName = methodType.toString();
+		String mappedMethodTypeName = mapPrimitiveTypeNames(typeName);
+		if (methodType.getKind() == TypeKind.DECLARED) {
+			// the field type literal is the type qualified name without the type parameters
+			DeclaredType declaredType = (DeclaredType) methodType;
+			mappedMethodTypeName = eraseTypeVariables(declaredType);
+		}
+		String parameterTypes = "";
+		for (VariableElement variableElement : methodElement.getParameters()) {
+			parameterTypes += "," + getTypeMirrorAsErasedString(variableElement.asType());
+		}
+		String parametricStaticClassName = staticClassName + "<" + holderTypeName + "," + mappedMethodTypeName + parameterTypes + ">";
+		boolean voidType = mappedMethodTypeName.equals("Void");
+		
+		writer.write("    public static final " + parametricStaticClassName + " __" + methodElement.getSimpleName() + " = new " + parametricStaticClassName + "() {\n"
+				+ "        public " + mappedMethodTypeName + " applyInner(" + holderTypeName + " object, Object [] arguments) {\n"
+				+ "            " + (voidType?"":"return ") + "object." + methodElement.getSimpleName() + "(");
+		List<String> parameterExpressions = Lists.newArrayList();
+		for (int i = 0; i < methodElement.getParameters().size(); i ++) {
+			VariableElement variableElement = methodElement.getParameters().get(i);
+			String typeCast = getTypeMirrorAsErasedString(variableElement.asType());
+			if ("?".equals(typeCast)) {
+				typeCast = "Object";
+			}
+			parameterExpressions.add("(" + typeCast + ") arguments[" + i + "]");
+		}
+		writer.write(Joiner.on(",").join(parameterExpressions));
+		writer.write(");\n");
+		if (voidType) {
+			writer.write("        return null;\n");
+		}
+		writer.write(
+				"        }\n"
+				+ "    };\n\n");
+	}
 	
-	public void emitPropertyLiteral(Writer writer, PropertyDescriptor descriptor, String holderTypeName, String holderTypeSimpleName) throws Exception {
-		TypeMirror fieldType = descriptor.getFieldType();
+	public void emitPropertyLiteral(Writer writer, PropertyDescriptor descriptor, DeclaredType holderType, String holderTypeSimpleName) throws Exception {
+		TypeMirror fieldType = descriptor.getType();
 		String fieldTypeName = fieldType.toString();
 		String mappedFieldTypeName = mapPrimitiveTypeNames(fieldTypeName);
 		String fieldTypeLiteral = mappedFieldTypeName;
+		currentFieldTypeName = null;
+		if (fieldType.getKind() == TypeKind.TYPEVAR) {
+			currentFieldTypeName = fieldTypeName;
+			fieldTypeLiteral = "Object";
+			mappedFieldTypeName = "Object";
+		}
 		if (fieldType.getKind() == TypeKind.DECLARED) {
 			// the field type literal is the type qualified name without the type parameters
 			DeclaredType declaredType = (DeclaredType) fieldType;
@@ -217,6 +283,7 @@ public class AnnotationProcessor extends AbstractProcessor {
 				throw new UnresolvedTypeException();
 			}
 		}
+		String holderTypeName = eraseTypeVariables(holderType);
 		String fieldName = descriptor.getFieldName();
 		String capitalizedFieldName = Character.toUpperCase(fieldName.charAt(0)) + fieldName.substring(1);
 		String getterName = "get" + capitalizedFieldName;
@@ -225,16 +292,13 @@ public class AnnotationProcessor extends AbstractProcessor {
 		}
 		String setterName = "set" + capitalizedFieldName;
 		String interfaceToImplement = descriptor.isObservable()?"ObservableProperty":"Property";
-		String listenersName = "listeners";
+		String listenersName = "$$" + fieldName + "$listeners";
 		writer.write("    public static final " + interfaceToImplement + "<"
 				+ holderTypeName + "," + mappedFieldTypeName + "> _" + fieldName + " = \n"
 						+ "    new " + interfaceToImplement + "<" + holderTypeName + "," + mappedFieldTypeName + ">() {\n"
 						+ "    @Override public " + mappedFieldTypeName + " getValue(" + holderTypeName + " instance) {\n"
 						+ "        return (" + fieldTypeLiteral + ") instance." + getterName + "();\n"
 						+ "    }\n");
-		if (descriptor.isObservable()) {
-			writer.write("        private final WeakReferenceListeners<" + holderTypeName + "," + mappedFieldTypeName + "> " + listenersName + " = new WeakReferenceListeners<" + holderTypeName + "," + mappedFieldTypeName + ">();\n");
-		}
 		if (!descriptor.isReadonly()) {
 			writer.write(
 					"    @Override public void setValue(" + holderTypeName + " instance, " + mappedFieldTypeName + " value) {\n"
@@ -249,10 +313,10 @@ public class AnnotationProcessor extends AbstractProcessor {
 		}
 		if (descriptor.isObservable()) {
 			writer.write("        @Override public ListenerRegistration addChangeListener(" + holderTypeName + " object, ValueChangeListener<" + mappedFieldTypeName + "> valueChangeListener) {\n"
-					   + "            return " + listenersName + ".addListener(object, valueChangeListener);\n"
+					   + "            return object." + listenersName + ".addListener(valueChangeListener);\n"
 					   + "        }\n");
 			writer.write("        @Override public void fireListeners(" + holderTypeName + " object, " + mappedFieldTypeName + " newValue) {\n"
-					   + "            " + listenersName + ".fireListeners(object, newValue);\n"
+					   + "            object." + listenersName + ".fireListeners(newValue);\n"
 					   + "        }\n");
 		}
 		writer.write(
@@ -276,26 +340,38 @@ public class AnnotationProcessor extends AbstractProcessor {
 		if (!declaredType.getTypeArguments().isEmpty()) {
 			List<String> parameterStrings = Lists.newArrayList();
 			for (TypeMirror typeMirror : declaredType.getTypeArguments()) {
-				if (typeMirror.getKind() == TypeKind.DECLARED) {
-					// normal declared types parameters are kept
-					parameterStrings.add(eraseTypeVariables((DeclaredType) typeMirror));
-					
-				}
-				if (typeMirror.getKind() == TypeKind.TYPEVAR) { 
-					// type parameters of the enclosign type are erased due to the static declaration
-					parameterStrings.add("?");
-				}
-				if (typeMirror.getKind() == TypeKind.ERROR) {
-					parameterStrings.add("?");
-				}
+				parameterStrings.add(getTypeMirrorAsErasedString(typeMirror));
 			}
 			result += "<" + Joiner.on(",").join(parameterStrings) + ">";
 		}
 		return result;
 	}
 	
+	public String getTypeMirrorAsErasedString(TypeMirror typeMirror) {
+		if (typeMirror.getKind() == TypeKind.DECLARED) {
+			// normal declared types parameters are kept
+			return eraseTypeVariables((DeclaredType) typeMirror);
+			
+		}
+		if (typeMirror.getKind() == TypeKind.TYPEVAR) {
+			// type parameters of the enclosign type are erased due to the static declaration
+			if (typeMirror.toString().equals(currentFieldTypeName)) {
+				return "Object";	// if it's a type paramater of the enclosing type, Object should be returned
+			}
+			return "?";
+		}
+		if (typeMirror.getKind() == TypeKind.ERROR) {
+			return "?";
+		}
+		if (typeMirror.getKind().isPrimitive()) {
+			return mapPrimitiveTypeNames(typeMirror.toString());
+		}
+		return "?";
+	}
+	
 	
 	public static final Map<String, String> primitiveTypesMap = ImmutableMap.<String, String>builder()
+			.put("void", "Void")
 			.put("boolean", "Boolean")
 				.put("byte", "Byte")
 				.put("short", "Short")

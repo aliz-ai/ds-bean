@@ -37,6 +37,9 @@ import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 
+/**
+ * TODO test listiterators
+ */
 public class TestObservableList {
 	
 	private ObservableList<String> sourceList;
