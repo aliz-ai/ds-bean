@@ -35,9 +35,9 @@ public class GenericBean<T> {
 	@Property
 	private T genericField;
 	
-	@com.doctusoft.Property
+	@Property
 	private Map<String, T> genericMapField;
 
-	@com.doctusoft.Property
+	@Property
 	private Map<String, List<T>> genericMultimapField;
 }

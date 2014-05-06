@@ -22,11 +22,9 @@ package com.doctusoft.common.core.bean.binding.observable;
 
 
 import lombok.AllArgsConstructor;
-import lombok.Getter;
 
 import com.doctusoft.ObservableProperty;
 
-@Getter
 @AllArgsConstructor
 public class TestContainerBean {
 	

@@ -1,5 +1,7 @@
 package com.doctusoft.bean;
 
+import java.io.Serializable;
+
 /*
  * #%L
  * ds-bean
@@ -24,7 +26,7 @@ package com.doctusoft.bean;
  *
  * @since 3.0.0
  */
-public interface Property<Bean, Value> {
+public interface Property<Bean, Value> extends Serializable {
 
 	Value getValue( Bean instance );
 

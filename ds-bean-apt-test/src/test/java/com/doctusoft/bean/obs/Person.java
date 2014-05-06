@@ -21,11 +21,8 @@ package com.doctusoft.bean.obs;
  */
 
 
-import lombok.Getter;
-
 import com.doctusoft.ObservableProperty;
 
-@Getter
 public class Person {
 	
 	@ObservableProperty
@@ -36,5 +33,5 @@ public class Person {
 	
 	@ObservableProperty
 	private boolean resident;
-
+	
 }
