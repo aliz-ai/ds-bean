@@ -3,7 +3,7 @@
 	<parent>
 		<groupId>com.doctusoft</groupId>
 		<artifactId>ds-bean-parent</artifactId>
-		<version>0.2.3</version>
+		<version>0.2.4-SNAPSHOT</version>
 	</parent>
 	<artifactId>ds-bean-binding</artifactId>
 	<name>ds-bean-binding</name>
