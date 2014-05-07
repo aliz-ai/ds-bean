@@ -56,6 +56,7 @@ import com.google.common.base.Joiner;
 import com.google.common.base.Objects;
 import com.google.common.base.Strings;
 import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
@@ -185,11 +186,13 @@ public class AnnotationProcessor extends AbstractProcessor {
 		ByteArrayOutputStream sourceBytes = new ByteArrayOutputStream();
 		Writer writer = new PrintWriter(sourceBytes);
 		writer.write("package " + pck.getQualifiedName() + ";\n\n");
+		writer.write("import com.doctusoft.bean.ModelObject;\n");
 		writer.write("import com.doctusoft.bean.Property;\n");
 		writer.write("import com.doctusoft.bean.ObservableProperty;\n");
 		writer.write("import com.doctusoft.bean.ListenerRegistration;\n");
 		writer.write("import com.doctusoft.bean.ValueChangeListener;\n");
-		writer.write("import com.doctusoft.bean.internal.PropertyListeners;\n");
+		writer.write("import com.doctusoft.bean.internal.PropertyListeners;\n\n");
+		writer.write("import com.google.common.collect.ImmutableList;\n");
 		DeclaredType holderType = (DeclaredType) enclosingType.asType();
 		String holderTypeSimpleName = ((TypeElement) holderType.asElement()).getSimpleName().toString();
 		String holderTypeName = holderTypeSimpleName;
@@ -198,6 +201,7 @@ public class AnnotationProcessor extends AbstractProcessor {
 			holderTypeName += "<" + Strings.repeat("?,", parametersCount - 1) + "?>";
 		}
 		writer.write("\npublic class " + holderTypeSimpleName + "_ {\n");
+		// write individual descriptors
 		for (ElementDescriptor descriptor : descriptors) {
 			if (descriptor instanceof PropertyDescriptor) {
 				emitPropertyLiteral(writer, (PropertyDescriptor) descriptor, holderType, holderTypeSimpleName);
@@ -205,6 +209,9 @@ public class AnnotationProcessor extends AbstractProcessor {
 			if (descriptor instanceof MethodDescriptor) {
 				emitMethodLiteral(writer, (MethodDescriptor) descriptor, holderTypeName, holderTypeSimpleName);
 			}
+		}
+		if (typeImplements(enclosingType, ModelObject.class.getName())) {
+			emitObservableAttributesList(writer, descriptors, enclosingType);
 		}
 		writer.write("\n}");
 		writer.close();
@@ -214,6 +221,31 @@ public class AnnotationProcessor extends AbstractProcessor {
 		OutputStream os = source.openOutputStream();
 		os.write(sourceBytes.toByteArray());
 		os.close();
+	}
+	
+	public void emitObservableAttributesList(Writer writer, Iterable<ElementDescriptor> descriptors, TypeElement holderType) throws Exception {
+		// write a list of all descriptors
+		writer.write("\n    public static Iterable<ObservableProperty<?, ?>> _observableProperties = ImmutableList.<ObservableProperty<?, ?>>builder().add(");
+		List<String> descriptorFieldNames = Lists.newArrayList();
+		for (ElementDescriptor descriptor : descriptors) {
+			if (descriptor instanceof PropertyDescriptor) {
+				PropertyDescriptor propertyDescriptor = (PropertyDescriptor) descriptor;
+				if (propertyDescriptor.isObservable()) {
+					descriptorFieldNames.add("_" + propertyDescriptor.getFieldName());
+				}
+			}
+		}
+		writer.write(Joiner.on(", ").join(descriptorFieldNames));
+		writer.write(")");
+		// check for supertype
+		if (holderType.getSuperclass().getKind() == TypeKind.DECLARED) {
+			TypeElement superTypeElement = (TypeElement) ((DeclaredType) holderType.getSuperclass()).asElement();
+			if (typeImplements(superTypeElement, ModelObject.class.getName())) {
+				writer.write(".addAll(" + superTypeElement.getQualifiedName().toString() + "_._observableProperties)");
+			}
+		}
+		writer.write(".build();\n\n");
+		
 	}
 
 	public void emitMethodLiteral(Writer writer, MethodDescriptor descriptor, String holderTypeName, String holderTypeSimpleName) throws Exception {
@@ -267,7 +299,7 @@ public class AnnotationProcessor extends AbstractProcessor {
 			currentFieldTypeName = fieldTypeName;
 			fieldTypeLiteral = "Object";
 			mappedFieldTypeName = "Object";
-			// type parameters of the enclosign type are erased due to the static declaration
+			// type parameters of the enclosing type are erased due to the static declaration
 			TypeVariable typeVar = (TypeVariable) fieldType;
 			TypeParameterElement typeParameterElement = (TypeParameterElement) typeVar.asElement();
 			if (typeParameterElement.getBounds().size() > 0) {
@@ -398,6 +430,18 @@ public class AnnotationProcessor extends AbstractProcessor {
 	
 	public static String eraseTypeParametersFromString(String typeString) {
 		return typeString.replaceAll("\\<.*\\>", "");
+	}
+	
+	public static boolean typeImplements(TypeElement typeElement, String ifName) {
+		for (TypeMirror ifMirror : typeElement.getInterfaces()) {
+			if (ifName.equals(eraseTypeParametersFromString(ifMirror.toString())))
+				return true;
+		}
+		if (typeElement.getSuperclass().getKind() == TypeKind.DECLARED) {
+			TypeElement superTypeElement = (TypeElement) ((DeclaredType) typeElement.getSuperclass()).asElement();
+			return typeImplements(superTypeElement, ifName);
+		}
+		return false;
 	}
 	
 	public class UnresolvedTypeException extends RuntimeException {
