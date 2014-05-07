@@ -1,6 +1,6 @@
 <factorypath>
-    <factorypathentry kind="VARJAR" id="M2_REPO/com/doctusoft/ds-bean/0.2.1-SNAPSHOT/ds-bean-0.2.1-SNAPSHOT.jar" enabled="true" runInBatchMode="false"/>
-    <factorypathentry kind="VARJAR" id="M2_REPO/com/doctusoft/lombok-ds/0.2.0/lombok-ds-0.2.0.jar" enabled="true" runInBatchMode="false"/>
-    <factorypathentry kind="VARJAR" id="M2_REPO/com/doctusoft/ds-bean-apt/0.2.1-SNAPSHOT/ds-bean-apt-0.2.1-SNAPSHOT.jar" enabled="true" runInBatchMode="false"/>
+    <factorypathentry kind="VARJAR" id="M2_REPO/com/doctusoft/ds-bean/0.2.2-SNAPSHOT/ds-bean-0.2.2-SNAPSHOT.jar" enabled="true" runInBatchMode="false"/>
+    <factorypathentry kind="VARJAR" id="M2_REPO/com/doctusoft/lombok-ds/0.2.1/lombok-ds-0.2.1.jar" enabled="true" runInBatchMode="false"/>
+    <factorypathentry kind="VARJAR" id="M2_REPO/com/doctusoft/ds-bean-apt/0.2.2-SNAPSHOT/ds-bean-apt-0.2.2-SNAPSHOT.jar" enabled="true" runInBatchMode="false"/>
     <factorypathentry kind="VARJAR" id="M2_REPO/com/google/guava/guava/16.0.1/guava-16.0.1.jar" enabled="true" runInBatchMode="false"/>
 </factorypath>

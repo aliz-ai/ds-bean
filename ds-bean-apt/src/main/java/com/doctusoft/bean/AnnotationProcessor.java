@@ -39,11 +39,13 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.type.TypeVariable;
 import javax.tools.Diagnostic.Kind;
 import javax.tools.JavaFileObject;
 
@@ -265,6 +267,18 @@ public class AnnotationProcessor extends AbstractProcessor {
 			currentFieldTypeName = fieldTypeName;
 			fieldTypeLiteral = "Object";
 			mappedFieldTypeName = "Object";
+			// type parameters of the enclosign type are erased due to the static declaration
+			TypeVariable typeVar = (TypeVariable) fieldType;
+			TypeParameterElement typeParameterElement = (TypeParameterElement) typeVar.asElement();
+			if (typeParameterElement.getBounds().size() > 0) {
+				// if the variable has bounds, eg 'T extends Comparable<T>', then the first bound is important, it will be the actual required type, see GenericBean2 in the test project
+				TypeMirror firstBound = typeParameterElement.getBounds().get(0);
+				String boundString = eraseTypeParametersFromString(firstBound.toString());
+				if (!"java.lang.Object".equals(boundString)) {
+					fieldTypeLiteral = boundString;
+					mappedFieldTypeName = boundString;
+				}
+			}
 		}
 		if (fieldType.getKind() == TypeKind.DECLARED) {
 			// the field type literal is the type qualified name without the type parameters
@@ -302,7 +316,7 @@ public class AnnotationProcessor extends AbstractProcessor {
 		if (!descriptor.isReadonly()) {
 			writer.write(
 					"    @Override public void setValue(" + holderTypeName + " instance, " + mappedFieldTypeName + " value) {\n"
-					+ "        instance." + setterName + "((" + fieldTypeLiteral + ")value);\n"
+					+ "        ((" + holderTypeSimpleName + ")instance)." + setterName + "((" + fieldTypeLiteral + ")value);\n"
 					+ "    }\n");
 		} else {
 			// readonly attribute
@@ -354,10 +368,6 @@ public class AnnotationProcessor extends AbstractProcessor {
 			
 		}
 		if (typeMirror.getKind() == TypeKind.TYPEVAR) {
-			// type parameters of the enclosign type are erased due to the static declaration
-			if (typeMirror.toString().equals(currentFieldTypeName)) {
-				return "Object";	// if it's a type paramater of the enclosing type, Object should be returned
-			}
 			return "?";
 		}
 		if (typeMirror.getKind() == TypeKind.ERROR) {
@@ -384,6 +394,10 @@ public class AnnotationProcessor extends AbstractProcessor {
 	
 	public static String mapPrimitiveTypeNames(String typeName) {
 		return Objects.firstNonNull(primitiveTypesMap.get(typeName), typeName);
+	}
+	
+	public static String eraseTypeParametersFromString(String typeString) {
+		return typeString.replaceAll("\\<.*\\>", "");
 	}
 	
 	public class UnresolvedTypeException extends RuntimeException {
