@@ -56,7 +56,6 @@ import com.google.common.base.Joiner;
 import com.google.common.base.Objects;
 import com.google.common.base.Strings;
 import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
@@ -238,14 +237,25 @@ public class AnnotationProcessor extends AbstractProcessor {
 		writer.write(Joiner.on(", ").join(descriptorFieldNames));
 		writer.write(")");
 		// check for supertype
-		if (holderType.getSuperclass().getKind() == TypeKind.DECLARED) {
-			TypeElement superTypeElement = (TypeElement) ((DeclaredType) holderType.getSuperclass()).asElement();
-			if (typeImplements(superTypeElement, ModelObject.class.getName())) {
-				writer.write(".addAll(" + superTypeElement.getQualifiedName().toString() + "_._observableProperties)");
-			}
-		}
+		emitObservableAttributesFromSuperclass(writer, holderType.getSuperclass());
 		writer.write(".build();\n\n");
-		
+	}
+	
+	public void emitObservableAttributesFromSuperclass(Writer writer, TypeMirror typeMirror) throws Exception {
+		if (typeMirror.getKind() != TypeKind.DECLARED)
+			return;
+		DeclaredType declaredType = (DeclaredType) typeMirror;
+		TypeElement typeElement = (TypeElement) declaredType.asElement();
+		if (!typeImplements(typeElement, ModelObject.class.getName()))	// if it's not a ModelObject, we quit the recursion without generating
+			return;
+		// if it's a modelobject, we have to check if a descriptor class is generated for it
+		if (elementDescriptors.containsKey(typeElement)) {
+			// if there's a descriptor class, then here we generate the .addAll code
+			writer.write(".addAll(" + typeElement.getQualifiedName().toString() + "_._observableProperties)");
+		} else {
+			// if there's not descriptor class for this superclass, we go further up the hierarchy
+			emitObservableAttributesFromSuperclass(writer, typeElement.getSuperclass());
+		}
 	}
 
 	public void emitMethodLiteral(Writer writer, MethodDescriptor descriptor, String holderTypeName, String holderTypeSimpleName) throws Exception {
