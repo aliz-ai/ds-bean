@@ -41,6 +41,13 @@ public class Bindings {
 	public static <R> ObservableChainedValueBindingBuilder<R> obs(R root) {
 		return ObservableChainedValueBindingBuilder.on(root);
 	}
+	
+	/**
+	 * Creates a normal (non-observable) binding builder with the given source 
+	 */
+	public static <R> ValueBindingBuilder<R> from(ValueBinding<R> sourceBinding) {
+		return ValueBindingBuilder.from(sourceBinding);
+	}
 
 	/**
 	 * Propagates the source binding value to the target binding. If the source binding is observable,

@@ -33,6 +33,12 @@ public class ValueBindingBuilder<T> implements ValueBinding<T> {
 		return builder;
 	}
 	
+	public static <R> ValueBindingBuilder<R> from(ValueBinding<R> source) {
+		ValueBindingBuilder<R> builder = new ValueBindingBuilder<R>();
+		builder.source = source;
+		return builder;
+	}
+
 	public <Target> ValueBindingBuilder<Target> get(Property<? super T, Target> attribute) {
 		ValueBindingBuilder<Target> builder = new ValueBindingBuilder<Target>();
 		builder.source = new AttributeCompositeValueBinding<T, Target>(source, attribute);

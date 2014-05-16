@@ -26,6 +26,7 @@ import static org.junit.Assert.assertEquals;
 import org.junit.Test;
 
 import com.doctusoft.bean.binding.Bindings;
+import com.doctusoft.bean.binding.ConstantValueBinding;
 import com.doctusoft.bean.binding.Converter;
 import com.doctusoft.bean.binding.ValueBinding;
 
@@ -83,6 +84,14 @@ public class TestValueBindingBuilder {
 		assertEquals(new Integer(1), binding.getValue());
 		binding.setValue(2);
 		assertEquals("2", testBean.getStringValue());
+	}
+	
+	@Test
+	public void testBuilderFromExistingBinding() {
+		TestBean testBean = new TestBean("1");
+		ValueBinding<TestBean> sourceBinding = new ConstantValueBinding<TestBean>(testBean);
+		ValueBinding<String> binding = Bindings.from(sourceBinding).get(TestBean_._stringValue);
+		assertEquals("1", binding.getValue());
 	}
 	
 	protected class DummyConverter implements Converter<String, Integer> {
