@@ -76,6 +76,7 @@ public class ObservableAttributeCompositeValueBinding<Source, Target> extends Ob
 	@Override
 	public Target getValue() {
 		Source sourceValue = sourceBinding.getValue();
+		// if the source value is null, we silently return null. It is needed in transient states for most UI frameworks
 		if (sourceValue == null)
 			return null;
 		return attribute.getValue(sourceValue);

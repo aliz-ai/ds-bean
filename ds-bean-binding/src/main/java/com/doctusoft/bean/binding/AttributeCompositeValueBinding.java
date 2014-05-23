@@ -34,11 +34,20 @@ public class AttributeCompositeValueBinding<Source, Target> extends CompositeVal
 	
 	@Override
 	public Target getValue() {
-		return attribute.getValue((Source)sourceBinding.getValue());
+		Source sourceValue = (Source)sourceBinding.getValue();
+		// if the source value is null, we silently return null. It is needed in transient states for most UI frameworks
+		if (sourceValue == null)
+			return null;
+		return attribute.getValue(sourceValue);
 	}
 	
 	public void setValue(Target value) {
-		attribute.setValue(sourceBinding.getValue(), value);
+		Source sourceValue = sourceBinding.getValue();
+		if (sourceValue != null) {
+			attribute.setValue(sourceValue, value);
+		} else {
+			// if the source value is null, we silently return null. It is needed in transient states for most UI frameworks
+		}
 	}
 
 }
