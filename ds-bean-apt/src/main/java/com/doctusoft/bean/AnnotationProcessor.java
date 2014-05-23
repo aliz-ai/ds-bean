@@ -50,8 +50,6 @@ import javax.tools.Diagnostic.Kind;
 import javax.tools.JavaFileObject;
 
 import com.doctusoft.MethodRef;
-import com.doctusoft.ObservableProperty;
-import com.doctusoft.Property;
 import com.google.common.base.Joiner;
 import com.google.common.base.Objects;
 import com.google.common.base.Strings;
@@ -82,13 +80,13 @@ public class AnnotationProcessor extends AbstractProcessor {
 		for (Element element : roundEnv.getElementsAnnotatedWith(com.doctusoft.Property.class)) {
 			PropertyDescriptor descriptor = new PropertyDescriptor();
 			descriptor.setElement(element);
-			descriptor.setReadonly(element.getAnnotation(Property.class).readonly());
+			descriptor.setReadonly(element.getAnnotation(com.doctusoft.Property.class).readonly());
 			descriptors.add(descriptor);
 		}
-		for (Element element : roundEnv.getElementsAnnotatedWith(ObservableProperty.class)) {
+		for (Element element : roundEnv.getElementsAnnotatedWith(com.doctusoft.ObservableProperty.class)) {
 			PropertyDescriptor descriptor = new PropertyDescriptor();
 			descriptor.setElement(element);
-			descriptor.setReadonly(element.getAnnotation(ObservableProperty.class).readonly());
+			descriptor.setReadonly(element.getAnnotation(com.doctusoft.ObservableProperty.class).readonly());
 			descriptor.setObservable(true);
 			descriptors.add(descriptor);
 		}
@@ -326,8 +324,7 @@ public class AnnotationProcessor extends AbstractProcessor {
 			// the field type literal is the type qualified name without the type parameters
 			DeclaredType declaredType = (DeclaredType) fieldType;
 			TypeElement typeElement = (TypeElement) declaredType.asElement();
-			fieldTypeLiteral = ((PackageElement) typeElement.getEnclosingElement()).getQualifiedName() + "." +
-							typeElement.getSimpleName();
+			fieldTypeLiteral = typeElement.getQualifiedName().toString();
 			// the type is present with the type parameters, but if the parameter is a type parameter of the enclosing type, it's replaced with a ? wildcard
 			mappedFieldTypeName = eraseTypeVariables(declaredType);
 		}
