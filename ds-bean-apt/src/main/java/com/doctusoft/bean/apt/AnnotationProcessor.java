@@ -1,4 +1,4 @@
-package com.doctusoft.bean;
+package com.doctusoft.bean.apt;
 
 /*
  * #%L
@@ -50,6 +50,7 @@ import javax.tools.Diagnostic.Kind;
 import javax.tools.JavaFileObject;
 
 import com.doctusoft.MethodRef;
+import com.doctusoft.bean.ModelObject;
 import com.google.common.base.Joiner;
 import com.google.common.base.Objects;
 import com.google.common.base.Strings;

@@ -1,4 +1,4 @@
-package com.doctusoft.bean;
+package com.doctusoft.bean.apt;
 
 import lombok.Data;
 

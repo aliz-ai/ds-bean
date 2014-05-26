@@ -1,4 +1,4 @@
-package com.doctusoft.bean;
+package com.doctusoft.bean.apt;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.type.TypeMirror;
