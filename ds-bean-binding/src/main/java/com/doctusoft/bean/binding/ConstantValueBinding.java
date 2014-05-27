@@ -35,7 +35,7 @@ public class ConstantValueBinding<Root> implements ValueBinding<Root> {
 	}
 	
 	public void setValue(Root value) {
-		throw new UnsupportedOperationException("Root value binding cannot be assigned");
+		throw new ConstantValueBindingAssignedException();
 	}
 	
 	@Override
@@ -44,4 +44,5 @@ public class ConstantValueBinding<Root> implements ValueBinding<Root> {
 			return "Empty ConstantValueBinding";
 		return root.toString();
 	}
+	
 }

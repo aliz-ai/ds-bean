@@ -23,6 +23,7 @@ package com.doctusoft.bean.binding.observable;
 
 import com.doctusoft.bean.ListenerRegistration;
 import com.doctusoft.bean.ValueChangeListener;
+import com.doctusoft.bean.binding.ConstantValueBindingAssignedException;
 
 /**
  * Well, quite an oximoron, but I hope you get the idea :) 
@@ -41,7 +42,7 @@ public class ObservableConstantValueBinding<Root> implements ObservableValueBind
 	}
 	
 	public void setValue(Root value) {
-		throw new UnsupportedOperationException("Root value binding cannot be assigned");
+		throw new ConstantValueBindingAssignedException();
 	}
 	
 	@Override
