@@ -50,4 +50,10 @@ public class ObservableChainedValueBindingBuilder<T> extends ObservableValueBind
 //		return builder;
 //	}
 	
+	@Override
+	public String toString() {
+		if (source == null)
+			return "Empty ObservableChainedValueBindingBuilder";
+		return source.toString();
+	}
 }

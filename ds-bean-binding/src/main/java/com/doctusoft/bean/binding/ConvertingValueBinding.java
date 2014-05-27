@@ -38,6 +38,11 @@ public class ConvertingValueBinding<Source, Target> extends CompositeValueBindin
 	@Override
 	public void setValue(Target value) {
 		((ValueBinding<Source>)sourceBinding).setValue(converter.convertTarget(value));
-	};
+	}
+	
+	@Override
+	public String toString() {
+		return sourceBinding.toString() + "->" + converter.toString();
+	}
 
 }

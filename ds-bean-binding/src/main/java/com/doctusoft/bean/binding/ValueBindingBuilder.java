@@ -60,4 +60,10 @@ public class ValueBindingBuilder<T> implements ValueBinding<T> {
 		source.setValue(value);
 	}
 
+	@Override
+	public String toString() {
+		if (source == null)
+			return "Empty ValueBindingBuilder";
+		return source.toString();
+	}
 }

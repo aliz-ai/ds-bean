@@ -91,4 +91,9 @@ public class ObservableAttributeCompositeValueBinding<Source, Target> extends Ob
 		}
 	}
 	
+	@Override
+	public String toString() {
+		return sourceBinding.toString() + "." + attribute.getName();
+	}
+	
 }

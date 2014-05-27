@@ -55,4 +55,9 @@ public class ObservableConvertingValueBinding<Source, Target> extends Observable
 		((ValueBinding<Source>)sourceBinding).setValue(converter.convertTarget(value));
 	};
 
+	@Override
+	public String toString() {
+		return sourceBinding.toString() + "->" + converter.toString();
+	}
+
 }

@@ -31,4 +31,8 @@ public class TestBean {
 	@ObservableProperty
 	private String stringValue;
 
+	@Override
+	public String toString() {
+		return "TestBean(" + stringValue + ")";
+	}
 }

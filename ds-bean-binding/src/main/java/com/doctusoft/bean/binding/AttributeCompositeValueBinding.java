@@ -50,4 +50,8 @@ public class AttributeCompositeValueBinding<Source, Target> extends CompositeVal
 		}
 	}
 
+	@Override
+	public String toString() {
+		return sourceBinding.toString() + "." + attribute.getName();
+	}
 }

@@ -38,4 +38,10 @@ public class ConstantValueBinding<Root> implements ValueBinding<Root> {
 		throw new UnsupportedOperationException("Root value binding cannot be assigned");
 	}
 	
+	@Override
+	public String toString() {
+		if (root == null)
+			return "Empty ConstantValueBinding";
+		return root.toString();
+	}
 }

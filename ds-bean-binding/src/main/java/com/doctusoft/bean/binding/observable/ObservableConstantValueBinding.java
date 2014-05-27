@@ -54,4 +54,11 @@ public class ObservableConstantValueBinding<Root> implements ObservableValueBind
 			}
 		};
 	}
+	
+	@Override
+	public String toString() {
+		if (root == null)
+			return "Empty ObservableConstantValueBinding";
+		return root.toString();
+	}
 }
