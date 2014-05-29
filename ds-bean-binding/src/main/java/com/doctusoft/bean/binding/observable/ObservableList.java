@@ -21,6 +21,7 @@ package com.doctusoft.bean.binding.observable;
  */
 
 
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
@@ -34,7 +35,7 @@ import com.google.common.collect.ForwardingList;
 import com.google.common.collect.ForwardingListIterator;
 import com.google.common.collect.Lists;
 
-public class ObservableList<T> extends ForwardingList<T> implements RandomAccess {
+public class ObservableList<T> extends ForwardingList<T> implements RandomAccess, Serializable {
 	
 	protected InsertListeners<T> insertListeners = new InsertListeners<T>();
 	protected RemoveListeners<T> removeListeners = new RemoveListeners<T>();
