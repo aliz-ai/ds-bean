@@ -1,5 +1,7 @@
 package com.doctusoft.bean.binding;
 
+import java.io.Serializable;
+
 /*
  * #%L
  * ds-bean-binding
@@ -21,7 +23,7 @@ package com.doctusoft.bean.binding;
  */
 
 
-public interface ValueBinding<T>  {
+public interface ValueBinding<T> extends Serializable  {
 	
 	T getValue();
 	

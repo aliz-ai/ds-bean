@@ -1,5 +1,7 @@
 package com.doctusoft.bean;
 
+import java.io.Serializable;
+
 /*
  * #%L
  * ds-bean
@@ -21,7 +23,7 @@ package com.doctusoft.bean;
  */
 
 
-public interface ValueChangeListener<T> {
+public interface ValueChangeListener<T> extends Serializable {
 	
 	void valueChanged(T newValue);
 

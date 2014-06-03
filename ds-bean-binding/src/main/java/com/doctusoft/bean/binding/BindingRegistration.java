@@ -1,5 +1,7 @@
 package com.doctusoft.bean.binding;
 
+import java.io.Serializable;
+
 /*
  * #%L
  * ds-bean-binding
@@ -21,6 +23,6 @@ package com.doctusoft.bean.binding;
  */
 
 
-public interface BindingRegistration {
+public interface BindingRegistration extends Serializable {
 	public void unbind();
 }

@@ -27,7 +27,7 @@ import java.util.List;
 
 public class GenericListeners<Listener> implements Serializable {
 
-	protected transient List<Listener> listeners = null;
+	protected List<Listener> listeners = null;
 
 	public ListenerRegistration addListener(final Listener listener) {
 		if (listeners == null) {
