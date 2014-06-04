@@ -21,6 +21,7 @@ package com.doctusoft.bean.binding.observable;
  */
 
 
+import java.io.Serializable;
 import java.util.List;
 
 import com.doctusoft.bean.ListenerRegistration;
@@ -32,7 +33,7 @@ import com.doctusoft.bean.binding.observable.ObservableList.ListElementRemovedLi
  * Normally delegates inserted and removed events to the methods you implement, but if the entire list instance changes
  * it translates the change to series of inserted and removed events
  */
-public abstract class ListBindingListener<T> {
+public abstract class ListBindingListener<T> implements Serializable {
 	
 	private ListenerRegistration insertListener;
 	private ListenerRegistration deleteListener;
