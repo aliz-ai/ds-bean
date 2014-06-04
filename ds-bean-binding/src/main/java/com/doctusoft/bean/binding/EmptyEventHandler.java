@@ -1,5 +1,7 @@
 package com.doctusoft.bean.binding;
 
+import java.io.Serializable;
+
 /*
  * #%L
  * ds-bean-binding
@@ -21,7 +23,7 @@ package com.doctusoft.bean.binding;
  */
 
 
-public interface EmptyEventHandler {
+public interface EmptyEventHandler extends Serializable {
 	
 	public void handle();
 
