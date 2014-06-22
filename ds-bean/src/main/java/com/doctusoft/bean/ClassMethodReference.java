@@ -1,5 +1,7 @@
 package com.doctusoft.bean;
 
+import java.io.Serializable;
+
 /*
  * #%L
  * ds-bean
@@ -21,7 +23,7 @@ package com.doctusoft.bean;
  */
 
 
-public abstract class ClassMethodReference<Cls, ReturnType> {
+public abstract class ClassMethodReference<Cls, ReturnType> implements Serializable {
 	
 //	public ObjectMethodReference<Cls, ReturnType> on(Cls object) {
 //		return ObjectMethodReference.on(this, object);
@@ -36,4 +38,10 @@ public abstract class ClassMethodReference<Cls, ReturnType> {
 	public ReturnType apply(Cls object, Object ... arguments) {
 		return applyInner(object, arguments);
 	}
+	
+	public abstract String getName();
+	
+	public abstract Class<Cls> getParent();
+	
+	public abstract Class<ReturnType> getReturnType();
 }

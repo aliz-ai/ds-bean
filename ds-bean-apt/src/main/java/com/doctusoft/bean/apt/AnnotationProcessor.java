@@ -262,22 +262,16 @@ public class AnnotationProcessor extends AbstractProcessor {
 		int numParams = methodElement.getParameters().size();
 		String staticClassName = "com.doctusoft.bean.ParametricClassMethodReferences.ClassMethodReference" + numParams;
 		TypeMirror methodType = descriptor.getType();
-		String typeName = methodType.toString();
-		String mappedMethodTypeName = mapPrimitiveTypeNames(typeName);
-		if (methodType.getKind() == TypeKind.DECLARED) {
-			// the field type literal is the type qualified name without the type parameters
-			DeclaredType declaredType = (DeclaredType) methodType;
-			mappedMethodTypeName = eraseTypeVariables(declaredType);
-		}
+		ProcessedTypeInfo methodTypeInfo = new ProcessedTypeInfo(methodType, descriptor.getElement());
 		String parameterTypes = "";
 		for (VariableElement variableElement : methodElement.getParameters()) {
 			parameterTypes += "," + getTypeMirrorAsErasedString(variableElement.asType());
 		}
-		String parametricStaticClassName = staticClassName + "<" + holderTypeName + "," + mappedMethodTypeName + parameterTypes + ">";
-		boolean voidType = mappedMethodTypeName.equals("Void");
+		String parametricStaticClassName = staticClassName + "<" + holderTypeName + "," + methodTypeInfo.mappedTypeName + parameterTypes + ">";
+		boolean voidType = methodTypeInfo.mappedTypeName.equals("Void");
 		
 		writer.write("    public static final " + parametricStaticClassName + " __" + methodElement.getSimpleName() + " = new " + parametricStaticClassName + "() {\n"
-				+ "        public " + mappedMethodTypeName + " applyInner(" + holderTypeName + " object, Object [] arguments) {\n"
+				+ "        public " + methodTypeInfo.mappedTypeName + " applyInner(" + holderTypeName + " object, Object [] arguments) {\n"
 				+ "            " + (voidType?"":"return ") + "object." + methodElement.getSimpleName() + "(");
 		List<String> parameterExpressions = Lists.newArrayList();
 		for (int i = 0; i < methodElement.getParameters().size(); i ++) {
@@ -294,82 +288,98 @@ public class AnnotationProcessor extends AbstractProcessor {
 			writer.write("        return null;\n");
 		}
 		writer.write(
-				"        }\n"
-				+ "    };\n\n");
+				"        }\n");
+		writer.write(
+				"        public String getName() { return \"" + methodElement.getSimpleName() + "\";}\n\n");
+		writer.write(
+				"        public Class<" + holderTypeName + "> getParent() { return (Class)" + holderTypeSimpleName + ".class; }\n\n");
+		writer.write(
+				"        public Class<" + methodTypeInfo.mappedTypeName + "> getReturnType() { return (Class)" + methodTypeInfo.typeLiteral + ".class; }\n\n");
+		writer.write(
+				"    };\n\n");
+	}
+	
+	protected class ProcessedTypeInfo {
+		public String typeName;
+		public String mappedTypeName;
+		public String typeLiteral;
+		public ProcessedTypeInfo(TypeMirror type, Element errorTarget) {
+			typeName = type.toString();
+			mappedTypeName = mapPrimitiveTypeNames(typeName);
+			typeLiteral = mappedTypeName;
+			currentFieldTypeName = null;
+			if (type.getKind() == TypeKind.TYPEVAR) {
+				currentFieldTypeName = typeName;
+				typeLiteral = "Object";
+				mappedTypeName = "Object";
+				// type parameters of the enclosing type are erased due to the static declaration
+				TypeVariable typeVar = (TypeVariable) type;
+				TypeParameterElement typeParameterElement = (TypeParameterElement) typeVar.asElement();
+				if (typeParameterElement.getBounds().size() > 0) {
+					// if the variable has bounds, eg 'T extends Comparable<T>', then the first bound is important, it will be the actual required type, see GenericBean2 in the test project
+					TypeMirror firstBound = typeParameterElement.getBounds().get(0);
+					String boundString = eraseTypeParametersFromString(firstBound.toString());
+					if (!"java.lang.Object".equals(boundString)) {
+						typeLiteral = boundString;
+						mappedTypeName = boundString;
+					}
+				}
+			}
+			if (type.getKind() == TypeKind.DECLARED) {
+				// the field type literal is the type qualified name without the type parameters
+				DeclaredType declaredType = (DeclaredType) type;
+				TypeElement typeElement = (TypeElement) declaredType.asElement();
+				typeLiteral = typeElement.getQualifiedName().toString();
+				// the type is present with the type parameters, but if the parameter is a type parameter of the enclosing type, it's replaced with a ? wildcard
+				mappedTypeName = eraseTypeVariables(declaredType);
+			}
+			if (type.getKind() == TypeKind.ERROR) {
+				// if the name contains dots then we assume it to be fully qualified
+				if (!typeLiteral.contains(".")) {
+					// if it does not, the generated will would probably not compile (if the given type is not in the same package)
+					processingEnv.getMessager().printMessage(Kind.ERROR, "Please use a fully qualified type literal", errorTarget);
+					throw new UnresolvedTypeException();
+				}
+			}
+		}
 	}
 	
 	public void emitPropertyLiteral(Writer writer, PropertyDescriptor descriptor, DeclaredType holderType, String holderTypeSimpleName) throws Exception {
 		TypeMirror fieldType = descriptor.getType();
-		String fieldTypeName = fieldType.toString();
-		String mappedFieldTypeName = mapPrimitiveTypeNames(fieldTypeName);
-		String fieldTypeLiteral = mappedFieldTypeName;
-		currentFieldTypeName = null;
-		if (fieldType.getKind() == TypeKind.TYPEVAR) {
-			currentFieldTypeName = fieldTypeName;
-			fieldTypeLiteral = "Object";
-			mappedFieldTypeName = "Object";
-			// type parameters of the enclosing type are erased due to the static declaration
-			TypeVariable typeVar = (TypeVariable) fieldType;
-			TypeParameterElement typeParameterElement = (TypeParameterElement) typeVar.asElement();
-			if (typeParameterElement.getBounds().size() > 0) {
-				// if the variable has bounds, eg 'T extends Comparable<T>', then the first bound is important, it will be the actual required type, see GenericBean2 in the test project
-				TypeMirror firstBound = typeParameterElement.getBounds().get(0);
-				String boundString = eraseTypeParametersFromString(firstBound.toString());
-				if (!"java.lang.Object".equals(boundString)) {
-					fieldTypeLiteral = boundString;
-					mappedFieldTypeName = boundString;
-				}
-			}
-		}
-		if (fieldType.getKind() == TypeKind.DECLARED) {
-			// the field type literal is the type qualified name without the type parameters
-			DeclaredType declaredType = (DeclaredType) fieldType;
-			TypeElement typeElement = (TypeElement) declaredType.asElement();
-			fieldTypeLiteral = typeElement.getQualifiedName().toString();
-			// the type is present with the type parameters, but if the parameter is a type parameter of the enclosing type, it's replaced with a ? wildcard
-			mappedFieldTypeName = eraseTypeVariables(declaredType);
-		}
-		if (fieldType.getKind() == TypeKind.ERROR) {
-			// if the name contains dots then we assume it to be fully qualified
-			if (!fieldTypeLiteral.contains(".")) {
-				// if it does not, the generated will would probably not compile (if the given type is not in the same package)
-				processingEnv.getMessager().printMessage(Kind.ERROR, "Please use a fully qualified type literal", descriptor.getElement());
-				throw new UnresolvedTypeException();
-			}
-		}
+		ProcessedTypeInfo fieldTypeInfo = new ProcessedTypeInfo(fieldType, descriptor.getElement());
 		String holderTypeName = eraseTypeVariables(holderType);
 		String fieldName = descriptor.getFieldName();
 		String capitalizedFieldName = Character.toUpperCase(fieldName.charAt(0)) + fieldName.substring(1);
 		String getterName = "get" + capitalizedFieldName;
-		if (fieldTypeName.equals("boolean")) {
+		if (fieldTypeInfo.typeName.equals("boolean")) {
 			getterName = "is" + capitalizedFieldName;
 		}
 		String setterName = "set" + capitalizedFieldName;
 		String interfaceToImplement = descriptor.isObservable()?"ObservableProperty":"Property";
 		String listenersName = "$$" + fieldName + "$listeners";
 		writer.write("    public static final " + interfaceToImplement + "<"
-				+ holderTypeName + "," + mappedFieldTypeName + "> _" + fieldName + " = \n"
-						+ "    new " + interfaceToImplement + "<" + holderTypeName + "," + mappedFieldTypeName + ">() {\n"
-						+ "    @Override public " + mappedFieldTypeName + " getValue(" + holderTypeName + " instance) {\n"
-						+ "        return (" + fieldTypeLiteral + ") instance." + getterName + "();\n"
+				+ holderTypeName + "," + fieldTypeInfo.mappedTypeName + "> _" + fieldName + " = \n"
+						+ "    new " + interfaceToImplement + "<" + holderTypeName + "," + fieldTypeInfo.mappedTypeName + ">() {\n"
+						+ "    @Override public " + fieldTypeInfo.mappedTypeName + " getValue(" + holderTypeName + " instance) {\n"
+						+ "        return (" + fieldTypeInfo.typeLiteral + ") instance." + getterName + "();\n"
 						+ "    }\n");
 		if (!descriptor.isReadonly()) {
 			writer.write(
-					"    @Override public void setValue(" + holderTypeName + " instance, " + mappedFieldTypeName + " value) {\n"
-					+ "        ((" + holderTypeSimpleName + ")instance)." + setterName + "((" + fieldTypeLiteral + ")value);\n"
+					"    @Override public void setValue(" + holderTypeName + " instance, " + fieldTypeInfo.mappedTypeName + " value) {\n"
+					+ "        ((" + holderTypeSimpleName + ")instance)." + setterName + "((" + fieldTypeInfo.typeLiteral + ")value);\n"
 					+ "    }\n");
 		} else {
 			// readonly attribute
 			writer.write(
-					"    @Override public void setValue(" + holderTypeName + " instance, " + mappedFieldTypeName + " value) {\n"
+					"    @Override public void setValue(" + holderTypeName + " instance, " + fieldTypeInfo.mappedTypeName + " value) {\n"
 					+ "        throw new UnsupportedOperationException(\"The field " + fieldName + " on type " + holderTypeName + " did not declare a setter.\");\n"
 					+ "    }\n");
 		}
 		if (descriptor.isObservable()) {
-			writer.write("        @Override public ListenerRegistration addChangeListener(" + holderTypeName + " object, ValueChangeListener<" + mappedFieldTypeName + "> valueChangeListener) {\n"
+			writer.write("        @Override public ListenerRegistration addChangeListener(" + holderTypeName + " object, ValueChangeListener<" + fieldTypeInfo.mappedTypeName + "> valueChangeListener) {\n"
 					   + "            return object." + listenersName + ".addListener(valueChangeListener);\n"
 					   + "        }\n");
-			writer.write("        @Override public void fireListeners(" + holderTypeName + " object, " + mappedFieldTypeName + " newValue) {\n"
+			writer.write("        @Override public void fireListeners(" + holderTypeName + " object, " + fieldTypeInfo.mappedTypeName + " newValue) {\n"
 					   + "            object." + listenersName + ".fireListeners(newValue);\n"
 					   + "        }\n");
 		}
@@ -377,8 +387,8 @@ public class AnnotationProcessor extends AbstractProcessor {
 						 "    @Override public String getName() {\n"
 						+ "        return \"" + fieldName + "\";\n"
 						+ "    }\n"
-						+ "    @Override public Class<" + mappedFieldTypeName + "> getType() {\n"
-						+ "        return (Class)" + fieldTypeLiteral + ".class;\n"
+						+ "    @Override public Class<" + fieldTypeInfo.mappedTypeName + "> getType() {\n"
+						+ "        return (Class)" + fieldTypeInfo.typeLiteral + ".class;\n"
 						+ "    }\n"
 						+ "    @Override public Class<" + holderTypeName + "> getParent() {\n"
 						+ "        return (Class)" + holderTypeSimpleName + ".class;\n"

@@ -72,11 +72,11 @@ public class ObservableList<T> extends ForwardingList<T> implements RandomAccess
 	}
 	
 	
-	public interface ListElementInsertedListener<T> {
+	public interface ListElementInsertedListener<T> extends Serializable {
 		public void inserted(ObservableList<T> list, int index, T element);
 	}
 	
-	public interface ListElementRemovedListener<T> {
+	public interface ListElementRemovedListener<T> extends Serializable {
 		public void removed(ObservableList<T> list, int index, T element);
 	}
 	

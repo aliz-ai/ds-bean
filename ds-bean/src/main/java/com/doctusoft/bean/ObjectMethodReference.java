@@ -1,5 +1,7 @@
 package com.doctusoft.bean;
 
+import java.io.Serializable;
+
 /*
  * #%L
  * ds-bean
@@ -21,7 +23,7 @@ package com.doctusoft.bean;
  */
 
 
-public class ObjectMethodReference<Cls, ReturnType> {
+public class ObjectMethodReference<Cls, ReturnType> implements Serializable {
 	
 	private final ClassMethodReference<Cls, ReturnType> ref;
 	private final Cls object;
