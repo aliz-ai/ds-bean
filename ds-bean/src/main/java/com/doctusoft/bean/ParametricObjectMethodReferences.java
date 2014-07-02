@@ -21,6 +21,9 @@ package com.doctusoft.bean;
  */
 
 
+/**
+ * Specialized {@link ObjectMethodReference} subclasses to support type-safe parameters, see {@link ParametricClassMethodReferences} 
+ */
 public abstract class ParametricObjectMethodReferences {
 	
 	public static class ObjectMethodReference0<Cls, ReturnType> extends ObjectMethodReference<Cls, ReturnType> {
@@ -53,6 +56,72 @@ public abstract class ParametricObjectMethodReferences {
 
 		public ReturnType invoke(Param0 param0, Param1 param1) {
 			return apply(param0, param1);
+		}
+	}
+
+	public static class ObjectMethodReference3<Cls, ReturnType, Param0, Param1, Param2> extends ObjectMethodReference<Cls, ReturnType> {
+		public ObjectMethodReference3(Cls object,
+				ClassMethodReference<Cls, ReturnType> ref) {
+			super(object, ref);
+		}
+
+		public ReturnType invoke(Param0 param0, Param1 param1, Param2 param2) {
+			return apply(param0, param1, param2);
+		}
+	}
+
+	public static class ObjectMethodReference4<Cls, ReturnType, Param0, Param1, Param2, Param3> extends ObjectMethodReference<Cls, ReturnType> {
+		public ObjectMethodReference4(Cls object,
+				ClassMethodReference<Cls, ReturnType> ref) {
+			super(object, ref);
+		}
+
+		public ReturnType invoke(Param0 param0, Param1 param1, Param2 param2, Param3 param3) {
+			return apply(param0, param1, param2, param3);
+		}
+	}
+	
+	public static class ObjectMethodReference5<Cls, ReturnType, Param0, Param1, Param2, Param3, Param4> extends ObjectMethodReference<Cls, ReturnType> {
+		public ObjectMethodReference5(Cls object,
+				ClassMethodReference<Cls, ReturnType> ref) {
+			super(object, ref);
+		}
+
+		public ReturnType invoke(Param0 param0, Param1 param1, Param2 param2, Param3 param3, Param4 param4) {
+			return apply(param0, param1, param2, param3, param4);
+		}
+	}
+
+	public static class ObjectMethodReference6<Cls, ReturnType, Param0, Param1, Param2, Param3, Param4, Param5> extends ObjectMethodReference<Cls, ReturnType> {
+		public ObjectMethodReference6(Cls object,
+				ClassMethodReference<Cls, ReturnType> ref) {
+			super(object, ref);
+		}
+
+		public ReturnType invoke(Param0 param0, Param1 param1, Param2 param2, Param3 param3, Param4 param4, Param5 param5) {
+			return apply(param0, param1, param2, param3, param4, param5);
+		}
+	}
+
+	public static class ObjectMethodReference7<Cls, ReturnType, Param0, Param1, Param2, Param3, Param4, Param5, Param6> extends ObjectMethodReference<Cls, ReturnType> {
+		public ObjectMethodReference7(Cls object,
+				ClassMethodReference<Cls, ReturnType> ref) {
+			super(object, ref);
+		}
+
+		public ReturnType invoke(Param0 param0, Param1 param1, Param2 param2, Param3 param3, Param4 param4, Param5 param5, Param6 param6) {
+			return apply(param0, param1, param2, param3, param4, param5, param6);
+		}
+	}
+
+	public static class ObjectMethodReference8<Cls, ReturnType, Param0, Param1, Param2, Param3, Param4, Param5, Param6, Param7> extends ObjectMethodReference<Cls, ReturnType> {
+		public ObjectMethodReference8(Cls object,
+				ClassMethodReference<Cls, ReturnType> ref) {
+			super(object, ref);
+		}
+
+		public ReturnType invoke(Param0 param0, Param1 param1, Param2 param2, Param3 param3, Param4 param4, Param5 param5, Param6 param6, Param7 param7) {
+			return apply(param0, param1, param2, param3, param4, param5, param6, param7);
 		}
 	}
 }
