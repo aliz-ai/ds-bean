@@ -24,6 +24,8 @@ package com.doctusoft.bean.binding.observable;
 import java.io.Serializable;
 import java.util.List;
 
+import lombok.Getter;
+
 import com.doctusoft.bean.ListenerRegistration;
 import com.doctusoft.bean.ValueChangeListener;
 import com.doctusoft.bean.binding.observable.ObservableList.ListElementInsertedListener;
@@ -38,14 +40,16 @@ public abstract class ListBindingListener<T> implements Serializable {
 	private ListenerRegistration insertListener;
 	private ListenerRegistration deleteListener;
 	
+	@Getter
 	private ObservableList<T> shadowList = new ObservableList<T>();
+	private ListenerRegistration listReplacedListener;
 	
 	public ListBindingListener(ObservableValueBinding<? extends List<T>> listBinding) {
 		List<T> items = listBinding.getValue();
 		if (items != null) {
 			valueChanged(items);
 		}
-		listBinding.addValueChangeListener((ValueChangeListener) new ValueChangeListener<List<T>>() {
+		listReplacedListener = listBinding.addValueChangeListener((ValueChangeListener) new ValueChangeListener<List<T>>() {
 			@Override
 			public void valueChanged(List<T> newValue) {
 				ListBindingListener.this.valueChanged(newValue);
@@ -68,12 +72,7 @@ public abstract class ListBindingListener<T> implements Serializable {
 	}
 
 	protected void bindListListeners(List<T> items) {
-		if (insertListener != null) {
-			insertListener.removeHandler();
-		}
-		if (deleteListener != null) {
-			deleteListener.removeHandler();
-		}
+		removeListListeners();
 		if (items != null && items instanceof ObservableList<?>) {
 			ObservableList<T> observableList = (ObservableList<T>) items;
 			// TODO make this reusable in ds-bean-binding
@@ -91,6 +90,28 @@ public abstract class ListBindingListener<T> implements Serializable {
 					ListBindingListener.this.removed(shadowList, index, element);
 				}
 			});
+		}
+	}
+
+	private void removeListListeners() {
+		if (insertListener != null) {
+			insertListener.removeHandler();
+			insertListener = null;
+		}
+		if (deleteListener != null) {
+			deleteListener.removeHandler();
+			deleteListener = null;
+		}
+	}
+	
+	/**
+	 * Unregisters all listeners and breaks the binding
+	 */
+	public void remove() {
+		removeListListeners();
+		if (listReplacedListener != null) {
+			listReplacedListener.removeHandler();
+			listReplacedListener = null;
 		}
 	}
 
