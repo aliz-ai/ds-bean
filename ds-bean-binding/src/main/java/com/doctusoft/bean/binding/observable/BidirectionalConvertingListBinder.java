@@ -1,5 +1,6 @@
 package com.doctusoft.bean.binding.observable;
 
+import java.io.Serializable;
 import java.util.List;
 
 import com.doctusoft.bean.binding.Converter;
@@ -10,7 +11,7 @@ import com.doctusoft.bean.binding.Converter;
  * Initially, the state of the source list is propagated
  * TODO: move this do ds-bean-binding 
  */
-public class BidirectionalConvertingListBinder<Source, Target> {
+public class BidirectionalConvertingListBinder<Source, Target> implements Serializable {
 	
 	private Converter<Source, Target> converter;
 	private ObservableValueBinding<? extends List<Target>> targetBinding;
