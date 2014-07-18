@@ -23,7 +23,7 @@ public class BidirectionalConvertingListBinder<Source, Target> implements Serial
 			final ObservableValueBinding<? extends List<Target>> targetBinding) {
 		this.converter = converter;
 		this.targetBinding = targetBinding;
-		abstract class ListCopyListener<S, T> {
+		abstract class ListCopyListener<S, T> implements Serializable {
 			private ObservableValueBinding<? extends List<T>> targetBinding;
 			public ListCopyListener(final ObservableValueBinding<? extends List<S>> sourceBinding, final ObservableValueBinding<? extends List<T>> targetBinding) {
 				this.targetBinding = targetBinding;
