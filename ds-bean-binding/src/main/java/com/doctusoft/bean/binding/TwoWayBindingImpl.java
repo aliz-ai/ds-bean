@@ -30,19 +30,29 @@ public class TwoWayBindingImpl<T> implements BindingRegistration {
 
 	private ListenerRegistration sourceListener;
 	private ListenerRegistration targetListener;
+	private T sourceValueToIgnore;
+	private T targetValueToIgnore;
 	private T lastSourceValue;
 	private T lastTargetValue;
 	public TwoWayBindingImpl(final ObservableValueBinding<T> source, final ObservableValueBinding<T> target) {
-		lastSourceValue = source.getValue();
-		target.setValue(lastSourceValue);
-		lastTargetValue = lastSourceValue;
+		sourceValueToIgnore = source.getValue();
+		targetValueToIgnore = sourceValueToIgnore;
+		lastSourceValue = sourceValueToIgnore;
+		lastTargetValue = sourceValueToIgnore;
+		target.setValue(sourceValueToIgnore);
 		sourceListener = source.addValueChangeListener(new ValueChangeListener<T>() {
 			@Override
 			public void valueChanged(T newValue) {
 				lastSourceValue = newValue;
-				if (!Objects.equal(lastTargetValue, newValue)) {
-					target.setValue(newValue);
-					lastTargetValue = newValue;
+				if (newValue == sourceValueToIgnore) {
+					// this is just a back hook notification
+					sourceValueToIgnore = null;
+				} else {
+					if (!Objects.equal(lastTargetValue, newValue)) {
+						targetValueToIgnore = newValue;
+						target.setValue(newValue);
+						lastTargetValue = newValue;
+					}
 				}
 			}
 		});
@@ -50,9 +60,15 @@ public class TwoWayBindingImpl<T> implements BindingRegistration {
 			@Override
 			public void valueChanged(T newValue) {
 				lastTargetValue = newValue;
-				if (!Objects.equal(lastSourceValue, newValue)) {
-					source.setValue(newValue);
-					lastSourceValue = newValue;
+				if (newValue == targetValueToIgnore) {
+					// this is just a back hook notification
+					targetValueToIgnore = null;
+				} else {
+					if (!Objects.equal(lastSourceValue, newValue)) {
+						sourceValueToIgnore = newValue;
+						source.setValue(newValue);
+						lastSourceValue = newValue;
+					}
 				}
 			}
 		});

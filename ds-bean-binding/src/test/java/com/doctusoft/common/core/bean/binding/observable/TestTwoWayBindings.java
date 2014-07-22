@@ -25,6 +25,7 @@ import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 
+import com.doctusoft.bean.ValueChangeListener;
 import com.doctusoft.bean.binding.BindingRegistration;
 import com.doctusoft.bean.binding.Bindings;
 
@@ -55,4 +56,25 @@ public class TestTwoWayBindings {
 		assertEquals("bean2", bean2.getStringValue());
 	}
 
+	@Test
+	public void testSelfChangingTwoWayBindings() {
+		final TestBean bean1 = new TestBean("");
+		final TestBean bean2 = new TestBean("");
+		// assume that changes on bean2 trigger some application logic that change values
+		Bindings.obs(bean2).get(TestBean_._stringValue).addValueChangeListener(new ValueChangeListener<String>() {
+			@Override
+			public void valueChanged(String newValue) {
+				if (!"other".equals(bean2.getStringValue())) {
+					bean2.setStringValue("other");
+				}
+			}
+		});
+		// assume that the application value is bound to a user interface component
+		Bindings.bind(Bindings.obs(bean1).get(TestBean_._stringValue), Bindings.obs(bean2).get(TestBean_._stringValue));
+		// now the user interface components gets a new value from the user
+		bean1.setStringValue("test");
+		// assert that both models are updated by the application
+		assertEquals("other", bean1.getStringValue());
+		assertEquals("other", bean2.getStringValue());
+	}
 }
