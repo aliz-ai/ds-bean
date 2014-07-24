@@ -56,6 +56,7 @@ public class ObservableAttributeCompositeValueBinding<Source, Target> extends Ob
 				if (sourceValue != null) {
 					Target targetValue = attribute.getValue(sourceValue);
 					fireListeners(targetValue);
+					sourceValue = null;	// clean up the reference
 				}
 			}
 		});
