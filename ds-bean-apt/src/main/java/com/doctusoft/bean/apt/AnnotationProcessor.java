@@ -50,6 +50,8 @@ import javax.tools.Diagnostic.Kind;
 import javax.tools.JavaFileObject;
 
 import com.doctusoft.MethodRef;
+import com.doctusoft.ObservableProperty;
+import com.doctusoft.Property;
 import com.doctusoft.bean.ModelObject;
 import com.google.common.base.Joiner;
 import com.google.common.base.Objects;
@@ -79,57 +81,75 @@ public class AnnotationProcessor extends AbstractProcessor {
 		// collect annotations and their elements
 		List<PropertyDescriptor> descriptors = Lists.newArrayList();
 		for (Element element : roundEnv.getElementsAnnotatedWith(com.doctusoft.Property.class)) {
-			PropertyDescriptor descriptor = new PropertyDescriptor();
-			descriptor.setElement(element);
-			descriptor.setReadonly(element.getAnnotation(com.doctusoft.Property.class).readonly());
-			descriptors.add(descriptor);
+			try {
+				PropertyDescriptor descriptor = new PropertyDescriptor();
+				descriptor.setElement(element);
+				Property annotation = element.getAnnotation(com.doctusoft.Property.class);
+				descriptor.setReadonly(annotation.readonly());
+				descriptors.add(descriptor);
+			} catch (Exception e) {
+				throw new RuntimeException("Exception with element: " + element + ", " + element.getEnclosingElement(), e);
+			}
 		}
 		for (Element element : roundEnv.getElementsAnnotatedWith(com.doctusoft.ObservableProperty.class)) {
-			PropertyDescriptor descriptor = new PropertyDescriptor();
-			descriptor.setElement(element);
-			descriptor.setReadonly(element.getAnnotation(com.doctusoft.ObservableProperty.class).readonly());
-			descriptor.setObservable(true);
-			descriptors.add(descriptor);
+			try {
+				PropertyDescriptor descriptor = new PropertyDescriptor();
+				descriptor.setElement(element);
+				ObservableProperty annotation = element.getAnnotation(com.doctusoft.ObservableProperty.class);
+				descriptor.setReadonly(annotation.readonly());
+				descriptor.setObservable(true);
+				descriptors.add(descriptor);
+			} catch (Exception e) {
+				throw new RuntimeException("Exception with element: " + element + ", " + element.getEnclosingElement(), e);
+			}
 		}
 		// extract some more data
 		for (PropertyDescriptor descriptor : descriptors) {
 			Element element = descriptor.getElement();
-			if (element.getKind() == ElementKind.CLASS) {
-				// TODO handle all fields and / or getters of the class
-			}
-			if (element.getKind() == ElementKind.FIELD) {
-				VariableElement variableElement = (VariableElement) element;
-				descriptor.setFieldName(element.getSimpleName().toString());
-				descriptor.setType(variableElement.asType());
-				descriptor.setElement(element);
-				Element enclosingElement = variableElement.getEnclosingElement();
-				elementDescriptors.put((TypeElement) enclosingElement, descriptor);
-			}
-			if (element.getKind() == ElementKind.METHOD) {
-				ExecutableElement methodElement = (ExecutableElement) element;
-				// ensure that the method is on a getter
-				String fieldName = getFieldNameFromGetter(methodElement);
-				if (fieldName == null) {
-					processingEnv.getMessager().printMessage(Kind.ERROR, "@Property must be on a getter method", methodElement);
+			try {
+				if (element.getKind() == ElementKind.CLASS) {
+					// TODO handle all fields and / or getters of the class
 				}
-				fieldName = Character.toLowerCase(fieldName.charAt(0)) + fieldName.substring(1);
-				descriptor.setFieldName(fieldName);
-				ExecutableType type = (ExecutableType) methodElement.asType();
-				descriptor.setType(type.getReturnType());
-				descriptor.setElement(element);
-				Element enclosingElement = methodElement.getEnclosingElement();
-				elementDescriptors.put((TypeElement) enclosingElement, descriptor); 
+				if (element.getKind() == ElementKind.FIELD) {
+					VariableElement variableElement = (VariableElement) element;
+					descriptor.setFieldName(element.getSimpleName().toString());
+					descriptor.setType(variableElement.asType());
+					descriptor.setElement(element);
+					Element enclosingElement = variableElement.getEnclosingElement();
+					elementDescriptors.put((TypeElement) enclosingElement, descriptor);
+				}
+				if (element.getKind() == ElementKind.METHOD) {
+					ExecutableElement methodElement = (ExecutableElement) element;
+					// ensure that the method is on a getter
+					String fieldName = getFieldNameFromGetter(methodElement);
+					if (fieldName == null) {
+						processingEnv.getMessager().printMessage(Kind.ERROR, "@Property must be on a getter method", methodElement);
+					}
+					fieldName = Character.toLowerCase(fieldName.charAt(0)) + fieldName.substring(1);
+					descriptor.setFieldName(fieldName);
+					ExecutableType type = (ExecutableType) methodElement.asType();
+					descriptor.setType(type.getReturnType());
+					descriptor.setElement(element);
+					Element enclosingElement = methodElement.getEnclosingElement();
+					elementDescriptors.put((TypeElement) enclosingElement, descriptor); 
+				}
+			} catch (Exception e) {
+				throw new RuntimeException("Exception with element: " + element + ", " + element.getEnclosingElement(), e);
 			}
 		}
 		for (Element element: roundEnv.getElementsAnnotatedWith(MethodRef.class)) {
-			MethodDescriptor descriptor = new MethodDescriptor();
-			ExecutableElement methodElement = (ExecutableElement) element;
-			TypeMirror type = (TypeMirror) methodElement.getReturnType();
-			descriptor.setType(type);
-			descriptor.setElement(methodElement);
-			descriptor.setMethodName(methodElement.getSimpleName().toString());
-			Element enclosingElement = methodElement.getEnclosingElement();
-			elementDescriptors.put((TypeElement) enclosingElement, descriptor);
+			try {
+				MethodDescriptor descriptor = new MethodDescriptor();
+				ExecutableElement methodElement = (ExecutableElement) element;
+				TypeMirror type = (TypeMirror) methodElement.getReturnType();
+				descriptor.setType(type);
+				descriptor.setElement(methodElement);
+				descriptor.setMethodName(methodElement.getSimpleName().toString());
+				Element enclosingElement = methodElement.getEnclosingElement();
+				elementDescriptors.put((TypeElement) enclosingElement, descriptor);
+			} catch (Exception e) {
+				throw new RuntimeException("Exception with element: " + element + ", " + element.getEnclosingElement(), e);
+			}
 		}
 		// emit source files
 		filer = processingEnv.getFiler();
