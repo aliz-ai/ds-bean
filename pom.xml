@@ -11,6 +11,7 @@
 		<module>ds-bean-apt</module>
 		<module>ds-bean-apt-test</module>
 		<module>ds-bean-binding</module>
+		<module>ds-bean-gwt</module>
 		<module>ds-bean-reflected</module>
 	</modules>
 
@@ -23,6 +24,8 @@
 		<version.maven.release.plugin>2.4</version.maven.release.plugin>
 		<version.maven.compiler.plugin>3.0</version.maven.compiler.plugin>
 		<version.maven.jar.plugin>2.4</version.maven.jar.plugin>
+		
+		<version.gwt>2.6.0</version.gwt>
 
 		<!-- maven-compiler-plugin -->
 		<maven.compiler.source>1.6</maven.compiler.source>
@@ -127,6 +130,11 @@
 				<groupId>junit</groupId>
 				<artifactId>junit</artifactId>
 				<version>4.11</version>
+			</dependency>
+			<dependency>
+				<groupId>com.google.gwt</groupId>
+				<artifactId>gwt-user</artifactId>
+				<version>${version.gwt}</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>

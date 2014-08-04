@@ -1,0 +1,68 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>com.doctusoft</groupId>
+		<artifactId>ds-bean-parent</artifactId>
+		<version>0.3.3-SNAPSHOT</version>
+	</parent>
+	<artifactId>ds-bean-gwt</artifactId>
+	<name>ds-bean-gwt</name>
+
+	<properties>
+	</properties>
+
+	<build>
+
+		<resources>
+			<resource>
+			    <directory>${basedir}/src/main/java</directory>
+			</resource>
+		</resources>
+
+		<plugins>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>license-maven-plugin</artifactId>
+				<configuration>
+					<canUpdateCopyright>true</canUpdateCopyright>
+					<canUpdateDescription>true</canUpdateDescription>
+					<licenseName>apache_v2</licenseName>
+					<roots>
+						<root>src</root>
+					</roots>
+					<organizationName>Doctusoft Ltd.</organizationName>
+					<inceptionYear>2014</inceptionYear>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+
+	<dependencies>
+		<dependency>
+			<groupId>com.doctusoft</groupId>
+			<artifactId>ds-bean-binding</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.doctusoft</groupId>
+			<artifactId>lombok-ds</artifactId>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.google.guava</groupId>
+			<artifactId>guava</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.google.gwt</groupId>
+			<artifactId>gwt-user</artifactId>
+			<scope>provided</scope>
+		</dependency>
+
+	</dependencies>
+
+</project>
