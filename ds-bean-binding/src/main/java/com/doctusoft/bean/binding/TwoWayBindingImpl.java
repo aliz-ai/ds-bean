@@ -24,7 +24,6 @@ package com.doctusoft.bean.binding;
 import com.doctusoft.bean.ListenerRegistration;
 import com.doctusoft.bean.ValueChangeListener;
 import com.doctusoft.bean.binding.observable.ObservableValueBinding;
-import com.google.common.base.Objects;
 
 public class TwoWayBindingImpl<T> implements BindingRegistration {
 
@@ -48,7 +47,7 @@ public class TwoWayBindingImpl<T> implements BindingRegistration {
 					// this is just a back hook notification
 					sourceValueToIgnore = null;
 				} else {
-					if (!Objects.equal(lastTargetValue, newValue)) {
+					if (lastTargetValue != newValue) {
 						targetValueToIgnore = newValue;
 						target.setValue(newValue);
 						lastTargetValue = newValue;
@@ -64,7 +63,7 @@ public class TwoWayBindingImpl<T> implements BindingRegistration {
 					// this is just a back hook notification
 					targetValueToIgnore = null;
 				} else {
-					if (!Objects.equal(lastSourceValue, newValue)) {
+					if (lastSourceValue != newValue) {
 						sourceValueToIgnore = newValue;
 						source.setValue(newValue);
 						lastSourceValue = newValue;
