@@ -77,4 +77,18 @@ public class TestTwoWayBindings {
 		assertEquals("other", bean1.getStringValue());
 		assertEquals("other", bean2.getStringValue());
 	}
+	
+	@Test
+	public void testChangeObjectReferenceToNull() {
+		final TestBean bean1 = new TestBean(null);
+		final TestBean bean2 = new TestBean(null);
+		// bind the two string values
+		Bindings.bind(Bindings.obs(bean1).get(TestBean_._stringValue), Bindings.obs(bean2).get(TestBean_._stringValue));
+		// set bean1 value to a non-null value
+		bean1.setStringValue("xx");
+		assertEquals("xx", bean2.getStringValue());
+		// set bean1 to null
+		bean1.setStringValue(null);
+		assertEquals(null, bean2.getStringValue());
+	}
 }

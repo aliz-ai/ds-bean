@@ -29,7 +29,9 @@ public class TwoWayBindingImpl<T> implements BindingRegistration {
 
 	private ListenerRegistration sourceListener;
 	private ListenerRegistration targetListener;
+	private boolean ignoreSourceValue; 
 	private T sourceValueToIgnore;
+	private boolean ignoreTargetValue;
 	private T targetValueToIgnore;
 	private T lastSourceValue;
 	private T lastTargetValue;
@@ -43,12 +45,14 @@ public class TwoWayBindingImpl<T> implements BindingRegistration {
 			@Override
 			public void valueChanged(T newValue) {
 				lastSourceValue = newValue;
-				if (newValue == sourceValueToIgnore) {
+				if (newValue == sourceValueToIgnore && ignoreSourceValue) {
 					// this is just a back hook notification
 					sourceValueToIgnore = null;
+					ignoreSourceValue = false;
 				} else {
 					if (lastTargetValue != newValue) {
 						targetValueToIgnore = newValue;
+						ignoreTargetValue = true;
 						target.setValue(newValue);
 						lastTargetValue = newValue;
 					}
@@ -59,12 +63,14 @@ public class TwoWayBindingImpl<T> implements BindingRegistration {
 			@Override
 			public void valueChanged(T newValue) {
 				lastTargetValue = newValue;
-				if (newValue == targetValueToIgnore) {
+				if (newValue == targetValueToIgnore && ignoreTargetValue) {
 					// this is just a back hook notification
 					targetValueToIgnore = null;
+					ignoreTargetValue = false;
 				} else {
 					if (lastSourceValue != newValue) {
 						sourceValueToIgnore = newValue;
+						ignoreSourceValue = true;
 						source.setValue(newValue);
 						lastSourceValue = newValue;
 					}
