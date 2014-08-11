@@ -397,10 +397,12 @@ public class AnnotationProcessor extends AbstractProcessor {
 		}
 		if (descriptor.isObservable()) {
 			writer.write("        @Override public ListenerRegistration addChangeListener(" + holderTypeName + " object, ValueChangeListener<" + fieldTypeInfo.mappedTypeName + "> valueChangeListener) {\n"
+                       + "            if (object." + listenersName + " == null) object. " + listenersName + " = new PropertyListeners();\n"
 					   + "            return object." + listenersName + ".addListener(valueChangeListener);\n"
 					   + "        }\n");
 			writer.write("        @Override public void fireListeners(" + holderTypeName + " object, " + fieldTypeInfo.mappedTypeName + " newValue) {\n"
-					   + "            object." + listenersName + ".fireListeners(newValue);\n"
+                       + "            if (object." + listenersName + "!= null)\n"
+					   + "                object." + listenersName + ".fireListeners(newValue);\n"
 					   + "        }\n");
 		}
 		writer.write(

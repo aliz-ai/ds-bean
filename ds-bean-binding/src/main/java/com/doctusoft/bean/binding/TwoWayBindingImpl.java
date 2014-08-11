@@ -53,8 +53,8 @@ public class TwoWayBindingImpl<T> implements BindingRegistration {
 					if (lastTargetValue != newValue) {
 						targetValueToIgnore = newValue;
 						ignoreTargetValue = true;
-						target.setValue(newValue);
 						lastTargetValue = newValue;
+						target.setValue(newValue);
 					}
 				}
 			}
@@ -71,8 +71,8 @@ public class TwoWayBindingImpl<T> implements BindingRegistration {
 					if (lastSourceValue != newValue) {
 						sourceValueToIgnore = newValue;
 						ignoreSourceValue = true;
-						source.setValue(newValue);
 						lastSourceValue = newValue;
+						source.setValue(newValue);
 					}
 				}
 			}

@@ -23,11 +23,17 @@ package com.doctusoft.common.core.bean.binding.observable;
 
 import static org.junit.Assert.assertEquals;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 import org.junit.Test;
 
 import com.doctusoft.bean.ValueChangeListener;
 import com.doctusoft.bean.binding.BindingRegistration;
 import com.doctusoft.bean.binding.Bindings;
+import com.doctusoft.bean.binding.Converter;
+import com.google.common.base.Strings;
 
 public class TestTwoWayBindings {
 	
@@ -90,5 +96,50 @@ public class TestTwoWayBindings {
 		// set bean1 to null
 		bean1.setStringValue(null);
 		assertEquals(null, bean2.getStringValue());
+	}
+	
+	@Test
+	public void testConvertingTwoWayBinding() {
+		TestBean2 bean1 = new TestBean2();
+		bean1.setNumber(1);
+		bean1.setText("1");
+		Bindings.bind(Bindings.obs(bean1).get(TestBean2_._text), Bindings.obs(bean1).get(TestBean2_._number).convert(new Converter<Integer, String>() {
+			@Override
+			public String convertSource(Integer source) {
+				return Integer.toString(source);
+			}
+			@Override
+			public Integer convertTarget(String target) {
+				return Integer.parseInt(target);
+			}
+		}));
+		bean1.setNumber(2);
+	}
+
+	@Test
+	public void testDateConvertingTwoWayBinding() {
+		TestBean2 bean1 = new TestBean2();
+		final DateFormat format = new SimpleDateFormat("yyyy.MM.dd");
+		Bindings.bind(Bindings.obs(bean1).get(TestBean2_._date), Bindings.obs(bean1).get(TestBean2_._text).convert(new Converter<String, Date>() {
+			@Override
+			public Date convertSource(String source) {
+				if (Strings.isNullOrEmpty(source))
+					return null;
+				try {
+					return format.parse(source);
+				} catch (Exception e) {
+					throw new RuntimeException(e);
+				}
+			}
+			@Override
+			public String convertTarget(Date target) {
+				if (target == null)
+					return "";
+				return format.format(target);
+			}
+		}));
+		// basically we just assert that things don't end up in an infinite loop
+		bean1.setDate(new Date(114, 3, 4));
+		bean1.setText("2014.04.04");
 	}
 }

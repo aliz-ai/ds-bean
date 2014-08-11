@@ -3,7 +3,7 @@
 	<parent>
 		<groupId>com.doctusoft</groupId>
 		<artifactId>ds-bean-parent</artifactId>
-		<version>0.3.3-SNAPSHOT</version>
+		<version>0.4.0-SNAPSHOT</version>
 	</parent>
 	<artifactId>ds-bean-apt-test</artifactId>
 	<name>ds-bean-apt-test</name>

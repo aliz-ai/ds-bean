@@ -2,7 +2,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.doctusoft</groupId>
 	<artifactId>ds-bean-parent</artifactId>
-	<version>0.3.3-SNAPSHOT</version>
+	<version>0.4.0-SNAPSHOT</version>
 	<name>ds-bean-parent</name>
 	<packaging>pom</packaging>
 
@@ -17,7 +17,7 @@
 
 	<properties>
 		<version.guava>16.0.1</version.guava>
-		<lombok.ds.version>0.2.4</lombok.ds.version>
+		<lombok.ds.version>0.4.0</lombok.ds.version>
 
 		<version.maven.clean.plugin>2.5</version.maven.clean.plugin>
 		<version.maven.install.plugin>2.4</version.maven.install.plugin>
