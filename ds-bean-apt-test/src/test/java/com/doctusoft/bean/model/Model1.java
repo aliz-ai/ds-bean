@@ -22,13 +22,9 @@ package com.doctusoft.bean.model;
 
 
 import com.doctusoft.ObservableProperty;
+import com.doctusoft.bean.ModelObject;
 
-public class Model1 extends ModelBase<String> {
-
-	@Override
-	public Iterable<com.doctusoft.bean.ObservableProperty<?, ?>> getObservableProperties() {
-		return Model1_._observableProperties;
-	}
+public class Model1 extends ModelBase<String> implements ModelObject {
 
 	@ObservableProperty
 	private String firstProperty;

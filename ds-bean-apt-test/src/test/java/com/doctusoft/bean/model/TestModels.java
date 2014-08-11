@@ -42,7 +42,7 @@ public class TestModels {
 	
 	@Test
 	public void testModel1() {
-		List<ObservableProperty<?, ?>> list  = Lists.newArrayList(new Model1().getObservableProperties());
+		List<ObservableProperty<?, ?>> list  = Lists.newArrayList(new Model1().getModelObjectDescriptor().getObservableProperties());
 		assertEquals(2, list.size());
 		assertTrue(list.contains(Model1_._firstProperty));
 		assertTrue(list.contains(ModelBase_._baseProperty));

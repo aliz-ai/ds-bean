@@ -22,8 +22,9 @@ package com.doctusoft.bean.obs;
 
 
 import com.doctusoft.ObservableProperty;
+import com.doctusoft.bean.ModelObject;
 
-public class Person {
+public class Person implements ModelObject {
 	
 	@ObservableProperty
 	private String name;

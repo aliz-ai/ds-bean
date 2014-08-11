@@ -209,7 +209,10 @@ public class AnnotationProcessor extends AbstractProcessor {
 		writer.write("import com.doctusoft.bean.ObservableProperty;\n");
 		writer.write("import com.doctusoft.bean.ListenerRegistration;\n");
 		writer.write("import com.doctusoft.bean.ValueChangeListener;\n");
+		writer.write("import com.doctusoft.bean.ModelObjectDescriptor;\n");
+		writer.write("import com.doctusoft.bean.BeanPropertyChangeListener;\n");
 		writer.write("import com.doctusoft.bean.internal.PropertyListeners;\n\n");
+		writer.write("import com.doctusoft.bean.internal.BeanPropertyListeners;\n\n");
 		writer.write("import com.google.common.collect.ImmutableList;\n");
 		DeclaredType holderType = (DeclaredType) enclosingType.asType();
 		String holderTypeSimpleName = ((TypeElement) holderType.asElement()).getSimpleName().toString();
@@ -230,6 +233,7 @@ public class AnnotationProcessor extends AbstractProcessor {
 		}
 		if (typeImplements(enclosingType, ModelObject.class.getName())) {
 			emitObservableAttributesList(writer, descriptors, enclosingType);
+			emitModelObjectDescriptor(writer, holderTypeName);
 		}
 		writer.write("\n}");
 		writer.close();
@@ -259,6 +263,25 @@ public class AnnotationProcessor extends AbstractProcessor {
 		emitObservableAttributesFromSuperclass(writer, holderType.getSuperclass());
 		writer.write(".build();\n\n");
 	}
+	
+	public void emitModelObjectDescriptor(Writer writer, String holderTypeName) throws Exception {
+		writer.write("\n    public static final ModelObjectDescriptor<" + holderTypeName + "> _descriptor = 		new ModelObjectDescriptor<" + holderTypeName + ">() {\r\n" + 
+				"			\r\n" + 
+				"			@Override\r\n" + 
+				"			public Iterable<com.doctusoft.bean.ObservableProperty<?, ?>> getObservableProperties() {\r\n" + 
+				"				return _observableProperties;\r\n" + 
+				"			}\r\n" + 
+				"			\r\n" + 
+				"			@Override\r\n" + 
+				"			public ListenerRegistration addBeanChangeListener(" + holderTypeName +" bean, \r\n" + 
+				"					BeanPropertyChangeListener<" + holderTypeName + "> listener) {\r\n" + 
+				"				if (bean.$$listeners == null) bean.$$listeners = new BeanPropertyListeners();\r\n" + 
+				"				return bean.$$listeners.addListener(listener);\r\n" + 
+				"			}\r\n" + 
+				"		};\r\n" + 
+				"");
+	}
+
 	
 	public void emitObservableAttributesFromSuperclass(Writer writer, TypeMirror typeMirror) throws Exception {
 		if (typeMirror.getKind() != TypeKind.DECLARED)
@@ -396,11 +419,14 @@ public class AnnotationProcessor extends AbstractProcessor {
 					+ "    }\n");
 		}
 		if (descriptor.isObservable()) {
+			// TODO thread-safe listeners instantiation
 			writer.write("        @Override public ListenerRegistration addChangeListener(" + holderTypeName + " object, ValueChangeListener<" + fieldTypeInfo.mappedTypeName + "> valueChangeListener) {\n"
-                       + "            if (object." + listenersName + " == null) object. " + listenersName + " = new PropertyListeners();\n"
+                       + "            if (object." + listenersName + " == null) object." + listenersName + " = new PropertyListeners();\n"
 					   + "            return object." + listenersName + ".addListener(valueChangeListener);\n"
 					   + "        }\n");
 			writer.write("        @Override public void fireListeners(" + holderTypeName + " object, " + fieldTypeInfo.mappedTypeName + " newValue) {\n"
+					   + "            if (object.$$listeners != null)\n"
+					   + "                object.$$listeners.fireListeners(object, this, newValue);\n"
                        + "            if (object." + listenersName + "!= null)\n"
 					   + "                object." + listenersName + ".fireListeners(newValue);\n"
 					   + "        }\n");

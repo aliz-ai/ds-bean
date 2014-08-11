@@ -1,5 +1,8 @@
 package com.doctusoft.bean.model;
 
+import com.doctusoft.ObservableProperty;
+import com.doctusoft.bean.ModelObject;
+
 /*
  * #%L
  * ds-bean-apt-test
@@ -20,17 +23,9 @@ package com.doctusoft.bean.model;
  * #L%
  */
 
-
-import com.doctusoft.bean.ObservableProperty;
-
-public class Model2 extends EmptyAbstractModel {
+public class Model2 extends EmptyAbstractModel implements ModelObject {
 	
-	@com.doctusoft.ObservableProperty
+	@ObservableProperty
 	private String property;
 	
-	@Override
-	public Iterable<ObservableProperty<?, ?>> getObservableProperties() {
-		return Model2_._observableProperties;
-	}
-
 }
