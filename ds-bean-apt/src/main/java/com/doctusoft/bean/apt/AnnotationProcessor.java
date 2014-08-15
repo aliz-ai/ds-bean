@@ -265,7 +265,7 @@ public class AnnotationProcessor extends AbstractProcessor {
 	}
 	
 	public void emitModelObjectDescriptor(Writer writer, String holderTypeName) throws Exception {
-		writer.write("\n    public static final ModelObjectDescriptor<" + holderTypeName + "> _descriptor = 		new ModelObjectDescriptor<" + holderTypeName + ">() {\r\n" + 
+		writer.write("\n    public static final ModelObjectDescriptor<" + holderTypeName + "> descriptor = 		new ModelObjectDescriptor<" + holderTypeName + ">() {\r\n" + 
 				"			\r\n" + 
 				"			@Override\r\n" + 
 				"			public Iterable<com.doctusoft.bean.ObservableProperty<?, ?>> getObservableProperties() {\r\n" + 
