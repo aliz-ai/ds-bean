@@ -36,7 +36,7 @@ public class TestBeanListeners {
 		final Person person = new Person();
 		Assert.assertNull(person.$$listeners);
 		person.setName("hello world"); // no NPE is thrown
-		Person_._descriptor.addBeanChangeListener(person, new BeanPropertyChangeListener<Person>() {
+		Person_.descriptor.addBeanChangeListener(person, new BeanPropertyChangeListener<Person>() {
 			@Override
 			public <T> void propertyChanged(Person bean, Property<Person, T> property,
 					T value) {

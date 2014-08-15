@@ -41,7 +41,7 @@
 	<dependencies>
 		<dependency>
 			<groupId>com.doctusoft</groupId>
-			<artifactId>ds-bean</artifactId>
+			<artifactId>ds-bean-binding</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
