@@ -233,7 +233,7 @@ public class AnnotationProcessor extends AbstractProcessor {
 		}
 		if (typeImplements(enclosingType, ModelObject.class.getName())) {
 			emitObservableAttributesList(writer, descriptors, enclosingType);
-			emitModelObjectDescriptor(writer, holderTypeName);
+			emitModelObjectDescriptor(writer, holderTypeName, enclosingType);
 		}
 		writer.write("\n}");
 		writer.close();
@@ -247,7 +247,7 @@ public class AnnotationProcessor extends AbstractProcessor {
 	
 	public void emitObservableAttributesList(Writer writer, Iterable<ElementDescriptor> descriptors, TypeElement holderType) throws Exception {
 		// write a list of all descriptors
-		writer.write("\n    public static Iterable<ObservableProperty<?, ?>> _observableProperties = ImmutableList.<ObservableProperty<?, ?>>builder().add(");
+		writer.write("\n    public static Iterable<ObservableProperty<?, ?>> observableProperties = ImmutableList.<ObservableProperty<?, ?>>builder().add(");
 		List<String> descriptorFieldNames = Lists.newArrayList();
 		for (ElementDescriptor descriptor : descriptors) {
 			if (descriptor instanceof PropertyDescriptor) {
@@ -264,40 +264,78 @@ public class AnnotationProcessor extends AbstractProcessor {
 		writer.write(".build();\n\n");
 	}
 	
-	public void emitModelObjectDescriptor(Writer writer, String holderTypeName) throws Exception {
+	public void emitModelObjectDescriptor(Writer writer, String holderTypeName, TypeElement holderType) throws Exception {
+		String superModelClass = getNextSuperModelClass(writer, holderType.getSuperclass());
 		writer.write("\n    public static final ModelObjectDescriptor<" + holderTypeName + "> descriptor = 		new ModelObjectDescriptor<" + holderTypeName + ">() {\r\n" + 
 				"			\r\n" + 
 				"			@Override\r\n" + 
 				"			public Iterable<com.doctusoft.bean.ObservableProperty<?, ?>> getObservableProperties() {\r\n" + 
-				"				return _observableProperties;\r\n" + 
+				"				return observableProperties;\r\n" + 
 				"			}\r\n" + 
-				"			\r\n" + 
-				"			@Override\r\n" + 
-				"			public ListenerRegistration addBeanChangeListener(" + holderTypeName +" bean, \r\n" + 
-				"					BeanPropertyChangeListener<" + holderTypeName + "> listener) {\r\n" + 
-				"				if (bean.$$listeners == null) bean.$$listeners = new BeanPropertyListeners();\r\n" + 
-				"				return bean.$$listeners.addListener(listener);\r\n" + 
-				"			}\r\n" + 
+				"			\r\n");
+		if (superModelClass == null) {
+			writer.write(
+					"			@Override\r\n" + 
+					"			public ListenerRegistration addBeanChangeListener(" + holderTypeName +" bean, \r\n" + 
+					"					BeanPropertyChangeListener<" + holderTypeName + "> listener) {\r\n" + 
+					"				if (bean.$$listeners == null) bean.$$listeners = new BeanPropertyListeners();\r\n" + 
+					"				return bean.$$listeners.addListener(listener);\r\n" + 
+					"			}\r\n");
+		} else {
+			writer.write(
+					"			@Override\r\n" + 
+					"			public ListenerRegistration addBeanChangeListener(" + holderTypeName +" bean, \r\n" + 
+					"					BeanPropertyChangeListener<" + holderTypeName + "> listener) {\r\n" + 
+					"				if (bean.$$listeners == null) bean.$$listeners = new BeanPropertyListeners();\r\n" + 
+					"				final ListenerRegistration localRegistration = bean.$$listeners.addListener(listener);\r\n" +
+					"				final ListenerRegistration superRegistration = " + superModelClass + "_.descriptor.addBeanChangeListener(bean, (BeanPropertyChangeListener) listener);\r\n" +
+					"				return new ListenerRegistration() {\r\n" +
+					"					public void removeHandler() {\r\n" +
+					"						localRegistration.removeHandler();\r\n" + 
+					"						superRegistration.removeHandler();\r\n" + 
+					"					}	\r\n" + 
+					"				};\r\n" + 
+					"			}\r\n");
+			
+		}
+		writer.write(
 				"		};\r\n" + 
 				"");
 	}
 
 	
 	public void emitObservableAttributesFromSuperclass(Writer writer, TypeMirror typeMirror) throws Exception {
+		String typeName = getNextSuperModelClass(writer, typeMirror);
+		if (typeName != null) {
+			writer.write(".addAll(" + typeName + "_.observableProperties)");
+		}
+	}
+
+	public String getNextSuperModelClass(Writer writer, TypeMirror typeMirror) throws Exception {
 		if (typeMirror.getKind() != TypeKind.DECLARED)
-			return;
+			return null;
 		DeclaredType declaredType = (DeclaredType) typeMirror;
 		TypeElement typeElement = (TypeElement) declaredType.asElement();
 		if (!typeImplements(typeElement, ModelObject.class.getName()))	// if it's not a ModelObject, we quit the recursion without generating
-			return;
+			return null;
 		// if it's a modelobject, we have to check if a descriptor class is generated for it
 		if (elementDescriptors.containsKey(typeElement)) {
-			// if there's a descriptor class, then here we generate the .addAll code
-			writer.write(".addAll(" + typeElement.getQualifiedName().toString() + "_._observableProperties)");
+			return typeElement.getQualifiedName().toString();
 		} else {
-			// if there's not descriptor class for this superclass, we go further up the hierarchy
-			emitObservableAttributesFromSuperclass(writer, typeElement.getSuperclass());
+			return getNextSuperModelClass(writer, typeElement.getSuperclass());
 		}
+	}
+
+	public String getTopMostModelObjectSuperclass(TypeElement typeElement, String nominee) throws Exception {
+		if (typeImplements(typeElement, ModelObject.class.getName())) {
+			nominee = typeElement.getQualifiedName().toString();
+		}
+		TypeMirror superTypeMirror = typeElement.getSuperclass();
+		if (superTypeMirror.getKind() != TypeKind.DECLARED)	// we can't go further up
+			return nominee;
+		DeclaredType declaredType = (DeclaredType) superTypeMirror;
+		TypeElement superTypeElement = (TypeElement) declaredType.asElement();
+		return getTopMostModelObjectSuperclass(superTypeElement, nominee);
 	}
 
 	public void emitMethodLiteral(Writer writer, MethodDescriptor descriptor, String holderTypeName, String holderTypeSimpleName) throws Exception {

@@ -35,7 +35,7 @@ public class TestModels {
 	
 	@Test
 	public void testModelBase() {
-		List<ObservableProperty<?, ?>> list = Lists.newArrayList(ModelBase_._observableProperties);
+		List<ObservableProperty<?, ?>> list = Lists.newArrayList(ModelBase_.observableProperties);
 		assertEquals(1, list.size());
 		assertEquals(ModelBase_._baseProperty, list.get(0));
 	}
