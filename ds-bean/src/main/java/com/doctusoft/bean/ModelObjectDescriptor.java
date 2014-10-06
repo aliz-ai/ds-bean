@@ -23,7 +23,14 @@ package com.doctusoft.bean;
 
 public interface ModelObjectDescriptor<Bean> {
 	
+	/**
+	 * @return a list of {@link ObservableProperty}-s on the class, including those from superclasses as well. 
+	 */
 	Iterable<ObservableProperty<?, ?>> getObservableProperties();
 	
+	/**
+	 * Registers the given listener on the bean instance. 
+	 * @return you can use this interface to unregister the attached listener from this bean.
+	 */
 	ListenerRegistration addBeanChangeListener(Bean bean, BeanPropertyChangeListener<Bean> listener);
 }
