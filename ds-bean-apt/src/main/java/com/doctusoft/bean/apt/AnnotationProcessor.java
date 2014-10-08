@@ -25,6 +25,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.Writer;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -60,6 +61,7 @@ import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
+import com.google.common.collect.Sets;
 
 @SupportedAnnotationTypes({"com.doctusoft.Property", "com.doctusoft.ObservableProperty", "com.doctusoft.MethodRef"})
 public class AnnotationProcessor extends AbstractProcessor {
@@ -68,6 +70,7 @@ public class AnnotationProcessor extends AbstractProcessor {
 	 * Property descriptors by class typename
 	 */
 	private Multimap<TypeElement, ElementDescriptor> elementDescriptors = ArrayListMultimap.create();
+	private Set<TypeElement> typesToHandle = Sets.newHashSet();
 	private Filer filer;
 	/**
 	 * if it's a type parameter
@@ -103,20 +106,41 @@ public class AnnotationProcessor extends AbstractProcessor {
 				throw new RuntimeException("Exception with element: " + element + ", " + element.getEnclosingElement(), e);
 			}
 		}
+		// process annotations on types -> add an element for each of their fields
+		for (PropertyDescriptor descriptor : Lists.newArrayList(descriptors)) {
+			Element element = descriptor.getElement();
+			try {
+				if (element.getKind() == ElementKind.CLASS) {
+					typesToHandle.add((TypeElement) element);
+					for (Element enclosedElement : element.getEnclosedElements()) {
+						if (enclosedElement.getKind() == ElementKind.FIELD) {
+							PropertyDescriptor enclosedDescriptor = new PropertyDescriptor();
+							enclosedDescriptor.setElement(enclosedElement);
+							enclosedDescriptor.setReadonly(descriptor.isReadonly());
+							enclosedDescriptor.setObservable(descriptor.isObservable());
+							descriptors.add(enclosedDescriptor);
+						}
+					}
+				}
+			} catch (Exception e) {
+				throw new RuntimeException("Exception with element: " + element + ", " + element.getEnclosingElement(), e);
+			}
+		}		
 		// extract some more data
 		for (PropertyDescriptor descriptor : descriptors) {
 			Element element = descriptor.getElement();
 			try {
-				if (element.getKind() == ElementKind.CLASS) {
-					// TODO handle all fields and / or getters of the class
-				}
 				if (element.getKind() == ElementKind.FIELD) {
 					VariableElement variableElement = (VariableElement) element;
-					descriptor.setFieldName(element.getSimpleName().toString());
+					String fieldName = element.getSimpleName().toString();
+					if (fieldName.startsWith("$$"))
+						continue;	// dont generate further descriptors for lombok-generated listener fields
+					descriptor.setFieldName(fieldName);
 					descriptor.setType(variableElement.asType());
 					descriptor.setElement(element);
 					Element enclosingElement = variableElement.getEnclosingElement();
 					elementDescriptors.put((TypeElement) enclosingElement, descriptor);
+					typesToHandle.add((TypeElement) enclosingElement);
 				}
 				if (element.getKind() == ElementKind.METHOD) {
 					ExecutableElement methodElement = (ExecutableElement) element;
@@ -132,6 +156,7 @@ public class AnnotationProcessor extends AbstractProcessor {
 					descriptor.setElement(element);
 					Element enclosingElement = methodElement.getEnclosingElement();
 					elementDescriptors.put((TypeElement) enclosingElement, descriptor); 
+					typesToHandle.add((TypeElement) enclosingElement);
 				}
 			} catch (Exception e) {
 				throw new RuntimeException("Exception with element: " + element + ", " + element.getEnclosingElement(), e);
@@ -147,15 +172,20 @@ public class AnnotationProcessor extends AbstractProcessor {
 				descriptor.setMethodName(methodElement.getSimpleName().toString());
 				Element enclosingElement = methodElement.getEnclosingElement();
 				elementDescriptors.put((TypeElement) enclosingElement, descriptor);
+				typesToHandle.add((TypeElement) enclosingElement);
 			} catch (Exception e) {
 				throw new RuntimeException("Exception with element: " + element + ", " + element.getEnclosingElement(), e);
 			}
 		}
 		// emit source files
 		filer = processingEnv.getFiler();
-		for (TypeElement typeElement : elementDescriptors.keySet()) {
+		for (TypeElement typeElement : typesToHandle) {
 			try {
-				emitClassSource(typeElement, elementDescriptors.get(typeElement));
+				Collection<ElementDescriptor> elementDescriptorsForType = elementDescriptors.get(typeElement);
+				if (elementDescriptorsForType == null) {
+					elementDescriptorsForType = Lists.newArrayList();
+				}
+				emitClassSource(typeElement, elementDescriptorsForType);
 			} catch (UnresolvedTypeException e) {
 				// do nothing, we will not emit this source file, hoping that in the next round we'll succeed
 				// (APT should get invoked again and again as long as new source files are generated)
@@ -318,24 +348,7 @@ public class AnnotationProcessor extends AbstractProcessor {
 		TypeElement typeElement = (TypeElement) declaredType.asElement();
 		if (!typeImplements(typeElement, ModelObject.class.getName()))	// if it's not a ModelObject, we quit the recursion without generating
 			return null;
-		// if it's a modelobject, we have to check if a descriptor class is generated for it
-		if (elementDescriptors.containsKey(typeElement)) {
-			return typeElement.getQualifiedName().toString();
-		} else {
-			return getNextSuperModelClass(writer, typeElement.getSuperclass());
-		}
-	}
-
-	public String getTopMostModelObjectSuperclass(TypeElement typeElement, String nominee) throws Exception {
-		if (typeImplements(typeElement, ModelObject.class.getName())) {
-			nominee = typeElement.getQualifiedName().toString();
-		}
-		TypeMirror superTypeMirror = typeElement.getSuperclass();
-		if (superTypeMirror.getKind() != TypeKind.DECLARED)	// we can't go further up
-			return nominee;
-		DeclaredType declaredType = (DeclaredType) superTypeMirror;
-		TypeElement superTypeElement = (TypeElement) declaredType.asElement();
-		return getTopMostModelObjectSuperclass(superTypeElement, nominee);
+		return typeElement.getQualifiedName().toString();
 	}
 
 	public void emitMethodLiteral(Writer writer, MethodDescriptor descriptor, String holderTypeName, String holderTypeSimpleName) throws Exception {
@@ -538,8 +551,9 @@ public class AnnotationProcessor extends AbstractProcessor {
 	
 	public static boolean typeImplements(TypeElement typeElement, String ifName) {
 		for (TypeMirror ifMirror : typeElement.getInterfaces()) {
-			if (ifName.equals(eraseTypeParametersFromString(ifMirror.toString())))
+			if (ifName.equals(eraseTypeParametersFromString(ifMirror.toString()))) {
 				return true;
+			}
 		}
 		if (typeElement.getSuperclass().getKind() == TypeKind.DECLARED) {
 			TypeElement superTypeElement = (TypeElement) ((DeclaredType) typeElement.getSuperclass()).asElement();

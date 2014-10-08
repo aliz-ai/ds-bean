@@ -1,5 +1,7 @@
 package com.doctusoft.bean.model;
 
+import com.doctusoft.ObservableProperty;
+
 /*
  * #%L
  * ds-bean-apt-test
@@ -20,7 +22,7 @@ package com.doctusoft.bean.model;
  * #L%
  */
 
-
+@ObservableProperty
 public abstract class EmptyAbstractModel extends ModelBase<String> {
 
 }
