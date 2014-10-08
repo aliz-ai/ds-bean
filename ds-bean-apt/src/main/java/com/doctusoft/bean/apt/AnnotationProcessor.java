@@ -215,7 +215,7 @@ public class AnnotationProcessor extends AbstractProcessor {
 		return null;	// this is not a getter
 	}
 	
-	public void emitClassSource(TypeElement enclosingType, Iterable<ElementDescriptor> descriptors) {
+	public void emitClassSource(TypeElement enclosingType, Collection<ElementDescriptor> descriptors) {
 		try {
 			// generate simple "MyClass_" named static descriptor class
 			emitPropertyDescriptorClass(enclosingType, descriptors);
@@ -229,7 +229,7 @@ public class AnnotationProcessor extends AbstractProcessor {
 		}
 	}
 	
-	public void emitPropertyDescriptorClass(TypeElement enclosingType, Iterable<ElementDescriptor> descriptors) throws Exception {
+	public void emitPropertyDescriptorClass(TypeElement enclosingType, Collection<ElementDescriptor> descriptors) throws Exception {
 		PackageElement pck = (PackageElement) enclosingType.getEnclosingElement();
 		ByteArrayOutputStream sourceBytes = new ByteArrayOutputStream();
 		Writer writer = new PrintWriter(sourceBytes);
@@ -263,7 +263,7 @@ public class AnnotationProcessor extends AbstractProcessor {
 		}
 		if (typeImplements(enclosingType, ModelObject.class.getName())) {
 			emitObservableAttributesList(writer, descriptors, enclosingType);
-			emitModelObjectDescriptor(writer, holderTypeName, enclosingType);
+			emitModelObjectDescriptor(writer, holderTypeName, enclosingType, !descriptors.isEmpty());
 		}
 		writer.write("\n}");
 		writer.close();
@@ -294,7 +294,7 @@ public class AnnotationProcessor extends AbstractProcessor {
 		writer.write(".build();\n\n");
 	}
 	
-	public void emitModelObjectDescriptor(Writer writer, String holderTypeName, TypeElement holderType) throws Exception {
+	public void emitModelObjectDescriptor(Writer writer, String holderTypeName, TypeElement holderType, boolean hasProperties) throws Exception {
 		String superModelClass = getNextSuperModelClass(writer, holderType.getSuperclass());
 		writer.write("\n    public static final ModelObjectDescriptor<" + holderTypeName + "> descriptor = 		new ModelObjectDescriptor<" + holderTypeName + ">() {\r\n" + 
 				"			\r\n" + 
@@ -303,6 +303,14 @@ public class AnnotationProcessor extends AbstractProcessor {
 				"				return observableProperties;\r\n" + 
 				"			}\r\n" + 
 				"			\r\n");
+		if (!hasProperties && superModelClass == null) {
+			writer.write(
+					"			@Override\r\n" + 
+					"			public ListenerRegistration addBeanChangeListener(" + holderTypeName +" bean, \r\n" + 
+					"					BeanPropertyChangeListener<" + holderTypeName + "> listener) {\r\n" + 
+					"				return new ListenerRegistration() { @Override public void removeHandler() {} };\r\n" + 
+					"			}\r\n");
+		} else
 		if (superModelClass == null) {
 			writer.write(
 					"			@Override\r\n" + 
