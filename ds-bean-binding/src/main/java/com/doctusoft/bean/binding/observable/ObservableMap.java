@@ -100,8 +100,9 @@ public class ObservableMap<K, V> extends ForwardingMap<K, V> {
 	
 	@Override
 	public V put(K key, V value) {
+		boolean contained = super.containsKey(key);
 		V previous = super.put(key, value);
-		if (previous != null) {
+		if (contained) {
 			removeListeners.fireEvent(this, key, previous);
 		}
 		insertListeners.fireEvent(this, key, value);
@@ -117,8 +118,9 @@ public class ObservableMap<K, V> extends ForwardingMap<K, V> {
 	
 	@Override
 	public V remove(Object key) {
+		boolean contained = super.containsKey(key);
 		V removed = super.remove(key);
-		if (removed != null) {
+		if (contained) {
 			removeListeners.fireEvent(this, (K) key, removed);
 		}
 		return removed;
@@ -170,18 +172,6 @@ public class ObservableMap<K, V> extends ForwardingMap<K, V> {
 			@Override
 			public void removed(ObservableSet<K> set, K element) {
 				remove(element);
-			}
-		});
-		addInsertListener(new MapElementInsertedListener<K, V>() {
-			@Override
-			public void inserted(ObservableMap<K, V> map, K key, V element) {
-				keys.add(key);
-			}
-		});
-		addDeleteListener(new MapElementRemovedListener<K, V>() {
-			@Override
-			public void removed(ObservableMap<K, V> map, K key, V element) {
-				keys.remove(key);
 			}
 		});
 		return keys;

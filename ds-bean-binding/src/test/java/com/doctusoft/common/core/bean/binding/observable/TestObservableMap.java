@@ -168,6 +168,17 @@ public class TestObservableMap {
 	}
 	
 	@Test
+	public void testKeySetPut() {
+		sourceMap.putAll(ImmutableMap.of("a", "2", "c", "1", "b", "3"));
+		assertTargetMap("a:2|b:3|c:1");
+		Set<String> keys = targetMap.keySet();
+		assertCollection(keys, "abc");
+		sourceMap.put("c", "4");
+		assertCollection(keys, "abc");
+		assertTargetMap("a:2|b:3|c:4");
+	}
+
+	@Test
 	public void testValues2() {
 		sourceMap.putAll(ImmutableMap.of("a", "2", "c", "1", "b", "3"));
 		assertTargetMap("a:2|b:3|c:1");
@@ -184,5 +195,29 @@ public class TestObservableMap {
 		Set<Entry<String, String>> entries = targetMap.entrySet();
 		sourceMap.remove("c");
 		assertEntrySet(entries, "a:2|b:3");
+	}
+	
+	@Test
+	public void testRemoveNull() {
+		sourceMap.put("a", null);
+		assertTargetMap("a:null");
+		sourceMap.remove("a");
+		assertTargetMap("");
+	}
+	
+	@Test
+	public void testChangeNull() {
+		sourceMap.put("a", null);
+		assertTargetMap("a:null");
+		sourceMap.put("a", "1");
+		assertTargetMap("a:1");
+	}
+
+	@Test
+	public void testChangeToNull() {
+		sourceMap.put("a", "1");
+		assertTargetMap("a:1");
+		sourceMap.put("a", null);
+		assertTargetMap("a:null");
 	}
 }
