@@ -220,4 +220,20 @@ public class TestObservableMap {
 		sourceMap.put("a", null);
 		assertTargetMap("a:null");
 	}
+	
+	@Test
+	public void testKeySetOnSourceMap() {
+		sourceMap.putAll(ImmutableMap.of("a", "2", "c", "1", "b", "3"));
+		assertTargetMap("a:2|b:3|c:1");
+		Set<String> keys = sourceMap.keySet();
+		assertCollection(keys, "abc");
+		sourceMap.put("c", "4");
+		assertCollection(keys, "abc");
+		assertTargetMap("a:2|b:3|c:4");
+		assertEquals("a:2|b:3|c:4", entrySetToString(sourceMap.entrySet()));
+		keys.remove("b");
+		assertCollection(keys, "ac");
+		assertTargetMap("a:2|c:4");
+		assertEquals("a:2|c:4", entrySetToString(sourceMap.entrySet()));
+	}
 }

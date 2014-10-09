@@ -101,10 +101,12 @@ public class ObservableMap<K, V> extends ForwardingMap<K, V> {
 	@Override
 	public V put(K key, V value) {
 		boolean contained = super.containsKey(key);
-		V previous = super.put(key, value);
+		V previous = super.get(key);
 		if (contained) {
+			super.remove(key); // it's important to remove it first, not just replace it with put() in one step! otherwise the keySet will call back and remove the newly placed element
 			removeListeners.fireEvent(this, key, previous);
 		}
+		super.put(key, value);
 		insertListeners.fireEvent(this, key, value);
 		return previous;
 	}
@@ -133,72 +135,97 @@ public class ObservableMap<K, V> extends ForwardingMap<K, V> {
 	 * However this doesn't cause an infinite loop in these cases, because the remove operations stop propagating when there is nothing to remove 
 	 * (e.g. map.remove() -> keySet.remove() -> map.remove(), but the last one returns null and doesn't fire any more handlers since there was no change to the collection) */ 
 	
+	private ObservableList<V> values;
+	
 	@Override
 	public Collection<V> values() {
-		final ObservableList<V> values = new ObservableList<V>(delegate.values());
-		values.addDeleteListener(new ListElementRemovedListener<V>() {
-			@Override
-			public void removed(ObservableList<V> list, int index, V element) {
-				Set<K> keysToRemove = Sets.newHashSet();
-				for (Entry<K, V> entry : delegate.entrySet()) {
-					if (entry.getValue() == element) { // intentially == not equals
-						keysToRemove.add(entry.getKey());
+		if (values == null) {
+			values = new ObservableList<V>(delegate.values());
+			values.addDeleteListener(new ListElementRemovedListener<V>() {
+				@Override
+				public void removed(ObservableList<V> list, int index, V element) {
+					Set<K> keysToRemove = Sets.newHashSet();
+					for (Entry<K, V> entry : delegate.entrySet()) {
+						if (entry.getValue() == element) { // intentially == not equals
+							keysToRemove.add(entry.getKey());
+						}
+					}
+					for (K key : keysToRemove) {
+						remove(key);
 					}
 				}
-				for (K key : keysToRemove) {
-					remove(key);
+			});
+			addInsertListener(new MapElementInsertedListener<K, V>() {
+				@Override
+				public void inserted(ObservableMap<K, V> map, K key, V element) {
+					values.add(element);
 				}
-			}
-		});
-		addInsertListener(new MapElementInsertedListener<K, V>() {
-			@Override
-			public void inserted(ObservableMap<K, V> map, K key, V element) {
-				values.add(element);
-			}
-		});
-		addDeleteListener(new MapElementRemovedListener<K, V>() {
-			@Override
-			public void removed(ObservableMap<K, V> map, K key, V element) {
-				values.remove(element);
-			}
-		});
+			});
+			addDeleteListener(new MapElementRemovedListener<K, V>() {
+				@Override
+				public void removed(ObservableMap<K, V> map, K key, V element) {
+					values.remove(element);
+				}
+			});
+		}
 		return values;
 	}
 	
+	private ObservableSet<K> keySet;
+	
 	@Override
 	public Set<K> keySet() {
-		final ObservableSet<K> keys = new ObservableSet<K>(delegate.keySet());
-		keys.addDeleteListener(new SetElementRemovedListener<K>() {
-			@Override
-			public void removed(ObservableSet<K> set, K element) {
-				remove(element);
-			}
-		});
-		return keys;
+		if (keySet == null) {
+			keySet = new ObservableSet<K>(delegate.keySet());
+			keySet.addDeleteListener(new SetElementRemovedListener<K>() {
+				@Override
+				public void removed(ObservableSet<K> set, K element) {
+					remove(element);
+				}
+			});
+			// the keySet doesn't support adding elements, just removing them
+			addInsertListener(new MapElementInsertedListener<K, V>() {
+				@Override
+				public void inserted(ObservableMap<K, V> map, K key, V element) {
+					keySet.add(key);
+				}
+			});
+			addDeleteListener(new MapElementRemovedListener<K, V>() {
+				@Override
+				public void removed(ObservableMap<K, V> map, K key, V element) {
+					keySet.remove(key);
+				}
+			});
+		}
+		return keySet;
 	}
+	
+	private ObservableSet<Entry<K, V>> entrySet;
 	
 	@Override
 	public Set<Entry<K, V>> entrySet() {
-		final ObservableSet<Entry<K, V>> keys = new ObservableSet<Entry<K, V>>(delegate.entrySet());
-		keys.addDeleteListener(new SetElementRemovedListener<Entry<K, V>>() {
-			@Override
-			public void removed(ObservableSet<Entry<K, V>> set, Entry<K, V> element) {
-				remove(element.getKey());
-			}
-		});
-		// the entrySet doesn't support adding elements either
-		addInsertListener(new MapElementInsertedListener<K, V>() {
-			@Override
-			public void inserted(ObservableMap<K, V> map, K key, V element) {
-				keys.add(Maps.immutableEntry(key, element));
-			}
-		});
-		addDeleteListener(new MapElementRemovedListener<K, V>() {
-			@Override
-			public void removed(ObservableMap<K, V> map, K key, V element) {
-				keys.remove(Maps.immutableEntry(key, element));
-			}
-		});
-		return keys;
+		if (entrySet == null) {
+			entrySet = new ObservableSet<Entry<K, V>>(delegate.entrySet());
+			entrySet.addDeleteListener(new SetElementRemovedListener<Entry<K, V>>() {
+				@Override
+				public void removed(ObservableSet<Entry<K, V>> set, Entry<K, V> element) {
+					remove(element.getKey());
+				}
+			});
+			// the entrySet doesn't support adding elements either
+			addInsertListener(new MapElementInsertedListener<K, V>() {
+				@Override
+				public void inserted(ObservableMap<K, V> map, K key, V element) {
+					entrySet.add(Maps.immutableEntry(key, element));
+				}
+			});
+			addDeleteListener(new MapElementRemovedListener<K, V>() {
+				@Override
+				public void removed(ObservableMap<K, V> map, K key, V element) {
+					entrySet.remove(Maps.immutableEntry(key, element));
+				}
+			});
+		}
+		return entrySet;
 	}
 }
