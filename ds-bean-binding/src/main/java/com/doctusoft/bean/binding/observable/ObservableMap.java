@@ -21,6 +21,7 @@ package com.doctusoft.bean.binding.observable;
  */
 
 
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
@@ -33,7 +34,7 @@ import com.google.common.collect.ForwardingMap;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
-public class ObservableMap<K, V> extends ForwardingMap<K, V> {
+public class ObservableMap<K, V> extends ForwardingMap<K, V> implements Serializable {
 
 	protected InsertListeners<K, V> insertListeners = new InsertListeners<K, V>();
 	protected RemoveListeners<K, V> removeListeners = new RemoveListeners<K, V>();
@@ -61,11 +62,11 @@ public class ObservableMap<K, V> extends ForwardingMap<K, V> {
 		return removeListeners.addListener(listener);
 	}
 	
-	public interface MapElementInsertedListener<K, V> {
+	public interface MapElementInsertedListener<K, V> extends Serializable {
 		public void inserted(ObservableMap<K, V> map, K key, V element);
 	}
 	
-	public interface MapElementRemovedListener<K, V> {
+	public interface MapElementRemovedListener<K, V> extends Serializable {
 		public void removed(ObservableMap<K, V> map, K key, V element);
 	}
 	
