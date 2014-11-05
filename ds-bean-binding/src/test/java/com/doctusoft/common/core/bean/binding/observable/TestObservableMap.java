@@ -236,4 +236,20 @@ public class TestObservableMap {
 		assertTargetMap("a:2|c:4");
 		assertEquals("a:2|c:4", entrySetToString(sourceMap.entrySet()));
 	}
+
+	@Test
+	public void testEntrySetInInsertListener() {
+		sourceMap.putAll(ImmutableMap.of("a", "1"));
+		sourceMap.addInsertListener(new MapElementInsertedListener<String, String>() {
+			@Override
+			public void inserted(ObservableMap<String, String> map, String key, String element) {
+				// to have this work properly, we need ObservablMap#initReflectingSets
+				assertEquals(2, sourceMap.entrySet().size());
+			}
+		});
+		assertTargetMap("a:1");
+		sourceMap.entrySet();	// register the entryset listeners
+		sourceMap.put("b", "2");
+		assertTargetMap("a:1|b:2");
+	}
 }

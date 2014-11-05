@@ -20,7 +20,6 @@ package com.doctusoft.bean.binding.observable;
  * #L%
  */
 
-
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.Map;
@@ -48,10 +47,23 @@ public class ObservableMap<K, V> extends ForwardingMap<K, V> implements Serializ
 	
 	public ObservableMap() {
 		delegate = Maps.newHashMap();
+		initReflectingSets();
 	}
 	
 	public ObservableMap(int size) {
 		delegate = Maps.newHashMapWithExpectedSize(size);
+		initReflectingSets();
+	}
+	
+	/**
+	 * These reflecting set need to be initiated before any other listeners get attached.
+	 * If an attached insertlistener would rely on entrySet() for example, then entrySet() would be called after registering this insert listener.
+	 * This would cause that the reflecting entry set gets updated after the specific insert listener is invoked, so that listener wouldn't yet see the inserted item in entrySet()
+	 */
+	private void initReflectingSets() {
+		entrySet();
+		keySet();
+		values();
 	}
 	
 	public ListenerRegistration addInsertListener(MapElementInsertedListener<K, V> listener) {
