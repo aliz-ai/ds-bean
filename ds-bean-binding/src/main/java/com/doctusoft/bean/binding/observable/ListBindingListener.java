@@ -26,6 +26,8 @@ import java.util.List;
 
 import lombok.Getter;
 
+import com.doctusoft.bean.ListenerRegistration;
+import com.doctusoft.bean.ValueChangeListener;
 import com.doctusoft.bean.binding.BindingRegistration;
 import com.doctusoft.bean.binding.observable.ObservableList.ListElementInsertedListener;
 import com.doctusoft.bean.binding.observable.ObservableList.ListElementRemovedListener;
