@@ -26,8 +26,7 @@ import java.util.List;
 
 import lombok.Getter;
 
-import com.doctusoft.bean.ListenerRegistration;
-import com.doctusoft.bean.ValueChangeListener;
+import com.doctusoft.bean.binding.BindingRegistration;
 import com.doctusoft.bean.binding.observable.ObservableList.ListElementInsertedListener;
 import com.doctusoft.bean.binding.observable.ObservableList.ListElementRemovedListener;
 
@@ -35,7 +34,7 @@ import com.doctusoft.bean.binding.observable.ObservableList.ListElementRemovedLi
  * Normally delegates inserted and removed events to the methods you implement, but if the entire list instance changes
  * it translates the change to series of inserted and removed events
  */
-public abstract class ListBindingListener<T> implements Serializable {
+public abstract class ListBindingListener<T> implements Serializable, BindingRegistration {
 	
 	private ListenerRegistration insertListener;
 	private ListenerRegistration deleteListener;
@@ -113,6 +112,11 @@ public abstract class ListBindingListener<T> implements Serializable {
 			listReplacedListener.removeHandler();
 			listReplacedListener = null;
 		}
+	}
+	
+	@Override
+	public void unbind() {
+		remove();
 	}
 
 	public abstract void inserted(ObservableList<T> list, int index, T element);
