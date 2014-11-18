@@ -24,6 +24,9 @@ package com.doctusoft.bean.binding.observable;
 import java.io.Serializable;
 import java.util.List;
 
+import lombok.Getter;
+import lombok.Setter;
+
 import com.doctusoft.bean.binding.Converter;
 
 /**
@@ -38,6 +41,8 @@ public class BidirectionalConvertingListBinder<Source, Target> implements Serial
 	private ObservableValueBinding<? extends List<Target>> targetBinding;
 	
 	private boolean changing = false;
+	@Getter @Setter
+	private boolean suspended = false;
 
 	// well this looks like javascript :)
 	public BidirectionalConvertingListBinder(final ObservableValueBinding<? extends List<Source>> sourceBinding, final Converter<Source, Target> converter,
@@ -51,7 +56,7 @@ public class BidirectionalConvertingListBinder<Source, Target> implements Serial
 				new ListBindingListener<S>(sourceBinding) {
 					@Override
 					public void inserted(ObservableList<S> list, int index, S element) {
-						if (changing)
+						if (changing || suspended)
 							return;
 						T targetValue = convert(element);
 						changing = true;
@@ -64,7 +69,7 @@ public class BidirectionalConvertingListBinder<Source, Target> implements Serial
 					
 					@Override
 					public void removed(ObservableList<S> list, int index, S element) {
-						if (changing)
+						if (changing || suspended)
 							return;
 						changing = true;
 						try {
@@ -94,5 +99,4 @@ public class BidirectionalConvertingListBinder<Source, Target> implements Serial
 		changing = false;
 	}
 	
-
 }
