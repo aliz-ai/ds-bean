@@ -3,7 +3,7 @@
 	<parent>
 		<groupId>com.doctusoft</groupId>
 		<artifactId>ds-bean-parent</artifactId>
-		<version>0.4.6-SNAPSHOT</version>
+		<version>0.4.6</version>
 	</parent>
 	<artifactId>ds-bean-gwt</artifactId>
 	<name>ds-bean-gwt</name>
