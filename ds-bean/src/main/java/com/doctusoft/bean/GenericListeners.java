@@ -44,7 +44,7 @@ public class GenericListeners<Listener> implements Serializable {
 		return new GenericListenerRegistration();
 	}
 	
-	protected interface ListenerCallback<T> {
+	protected interface ListenerCallback<T> extends Serializable {
 		void apply(T listener);
 	}
 	

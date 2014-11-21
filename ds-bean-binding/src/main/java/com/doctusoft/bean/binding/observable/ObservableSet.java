@@ -21,6 +21,7 @@ package com.doctusoft.bean.binding.observable;
  */
 
 
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
@@ -33,7 +34,7 @@ import com.google.common.collect.ForwardingSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
-public class ObservableSet<T> extends ForwardingSet<T> {
+public class ObservableSet<T> extends ForwardingSet<T> implements Serializable {
 
 	protected InsertListeners<T> insertListeners = new InsertListeners<T>();
 	protected RemoveListeners<T> removeListeners = new RemoveListeners<T>();
@@ -65,11 +66,11 @@ public class ObservableSet<T> extends ForwardingSet<T> {
 		return removeListeners.addListener(listener);
 	}
 	
-	public interface SetElementInsertedListener<T> {
+	public interface SetElementInsertedListener<T> extends Serializable {
 		public void inserted(ObservableSet<T> set, T element);
 	}
 	
-	public interface SetElementRemovedListener<T> {
+	public interface SetElementRemovedListener<T> extends Serializable {
 		public void removed(ObservableSet<T> set, T element);
 	}
 	

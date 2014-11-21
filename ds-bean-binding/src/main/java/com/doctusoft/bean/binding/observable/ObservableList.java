@@ -244,7 +244,7 @@ public class ObservableList<T> extends ForwardingList<T> implements RandomAccess
 
 	@Override
 	public Iterator<T> iterator() {
-		return new ForwardingIterator<T>() {
+		class SimpleInnerIterator extends ForwardingIterator<T> implements Serializable {
 			Iterator<T> delegate = ObservableList.super.iterator();
 			@Override
 			protected Iterator<T> delegate() {
@@ -263,5 +263,6 @@ public class ObservableList<T> extends ForwardingList<T> implements RandomAccess
 			}
 			
 		};
+		return new SimpleInnerIterator();
 	}
 }
