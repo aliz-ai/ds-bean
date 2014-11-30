@@ -76,6 +76,7 @@ public class TwoWayBindingImpl<T> implements BindingRegistration {
 				}
 			}
 		});
+		ignoreTargetValue = true;
 		target.setValue(sourceValueToIgnore);
 	}
 	@Override

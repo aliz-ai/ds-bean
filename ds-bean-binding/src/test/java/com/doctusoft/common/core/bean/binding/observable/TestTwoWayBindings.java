@@ -142,4 +142,22 @@ public class TestTwoWayBindings {
 		bean1.setDate(new Date(114, 3, 4));
 		bean1.setText("2014.04.04");
 	}
+	
+	@Test
+	public void testTwoWayBindingUpdatedOnTargetSide() {
+		final TestBean bean1 = new TestBean(null);
+		final TestBean bean2 = new TestBean(null);
+		// bean1 behaves as a UI component that instantly replaces null value with a default one
+		TestBean_._stringValue.addChangeListener(bean1, new ValueChangeListener<String>() {
+			@Override
+			public void valueChanged(String newValue) {
+				if (newValue == null) {
+					bean1.setStringValue("default");
+				}
+			}
+		});
+		Bindings.bind(Bindings.obs(bean2).get(TestBean_._stringValue), Bindings.obs(bean1).get(TestBean_._stringValue));
+		assertEquals("default", bean1.getStringValue());
+		assertEquals("default", bean2.getStringValue());
+	}
 }
