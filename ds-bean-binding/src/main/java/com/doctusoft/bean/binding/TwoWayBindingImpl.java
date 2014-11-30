@@ -40,7 +40,6 @@ public class TwoWayBindingImpl<T> implements BindingRegistration {
 		targetValueToIgnore = sourceValueToIgnore;
 		lastSourceValue = sourceValueToIgnore;
 		lastTargetValue = sourceValueToIgnore;
-		target.setValue(sourceValueToIgnore);
 		sourceListener = source.addValueChangeListener(new ValueChangeListener<T>() {
 			@Override
 			public void valueChanged(T newValue) {
@@ -77,6 +76,7 @@ public class TwoWayBindingImpl<T> implements BindingRegistration {
 				}
 			}
 		});
+		target.setValue(sourceValueToIgnore);
 	}
 	@Override
 	public void unbind() {

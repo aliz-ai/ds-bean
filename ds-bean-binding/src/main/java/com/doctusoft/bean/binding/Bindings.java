@@ -58,10 +58,10 @@ public class Bindings {
 	 * @return a {@link BindingRegistration} that can be used to unbind (remove propagating change listeners), if necessary
 	 */
 	public static <T> BindingRegistration bind(final ValueBinding<T> sourceBinding, final ValueBinding<T> targetBinding) {
-		// set current value
-		targetBinding.setValue(sourceBinding.getValue());
-		// listen to changes
 		if (sourceBinding instanceof ObservableValueBinding<?> && !(targetBinding instanceof ObservableValueBinding<?>)) {
+			// set current value
+			targetBinding.setValue(sourceBinding.getValue());
+			// listen to changes
 			return new OneWayBindingImpl<T>((ObservableValueBinding<T>) sourceBinding, targetBinding);
 		}
 		if (sourceBinding instanceof ObservableValueBinding<?> && (targetBinding instanceof ObservableValueBinding<?>)) {
