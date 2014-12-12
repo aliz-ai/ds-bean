@@ -39,6 +39,11 @@
 
 	<dependencies>
 		<dependency>
+			<groupId>org.easymock</groupId>
+			<artifactId>easymock</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
 			<groupId>com.doctusoft</groupId>
 			<artifactId>ds-bean</artifactId>
 			<version>${project.version}</version>

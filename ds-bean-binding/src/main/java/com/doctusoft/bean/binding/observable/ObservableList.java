@@ -236,6 +236,13 @@ public class ObservableList<T> extends ForwardingList<T> implements RandomAccess
 			insertListeners.fireEvent(ObservableList.this, indexOf(element), element);
 		}
 		@Override
+		public void set(T element) {
+			super.set(element);
+			int index = indexOf(element);
+			removeListeners.fireEvent(ObservableList.this, index, lastReturned);
+			insertListeners.fireEvent(ObservableList.this, index, element);
+		}
+		@Override
 		public void remove() {
 			fireRemoveListenersFor(lastReturned);
 			super.remove();
