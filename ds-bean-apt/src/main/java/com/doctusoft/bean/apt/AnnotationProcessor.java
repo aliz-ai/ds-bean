@@ -372,9 +372,14 @@ public class AnnotationProcessor extends AbstractProcessor {
 		String parametricStaticClassName = staticClassName + "<" + holderTypeName + "," + methodTypeInfo.mappedTypeName + parameterTypes + ">";
 		boolean voidType = methodTypeInfo.mappedTypeName.equals("Void");
 		
+		boolean hasDeclaredExceptions = !methodElement.getThrownTypes().isEmpty();
+		
 		writer.write("    public static final " + parametricStaticClassName + " __" + methodElement.getSimpleName() + " = new " + parametricStaticClassName + "() {\n"
-				+ "        public " + methodTypeInfo.mappedTypeName + " applyInner(" + holderTypeName + " object, Object [] arguments) {\n"
-				+ "            " + (voidType?"":"return ") + "object." + methodElement.getSimpleName() + "(");
+				+ "        public " + methodTypeInfo.mappedTypeName + " applyInner(" + holderTypeName + " object, Object [] arguments) {\n");
+		if (hasDeclaredExceptions) {
+			writer.write("            try {\n");
+		}
+		writer.write("            " + (voidType?"":"return ") + "object." + methodElement.getSimpleName() + "(");
 		List<String> parameterExpressions = Lists.newArrayList();
 		for (int i = 0; i < methodElement.getParameters().size(); i ++) {
 			VariableElement variableElement = methodElement.getParameters().get(i);
@@ -388,6 +393,9 @@ public class AnnotationProcessor extends AbstractProcessor {
 		writer.write(");\n");
 		if (voidType) {
 			writer.write("        return null;\n");
+		}
+		if (hasDeclaredExceptions) {
+			writer.write("        } catch (Exception e) { throw new com.doctusoft.bean.ReferencedInvocationException(e); }\n");
 		}
 		writer.write(
 				"        }\n");
