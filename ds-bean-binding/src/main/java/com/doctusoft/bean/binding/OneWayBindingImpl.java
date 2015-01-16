@@ -25,7 +25,7 @@ import com.doctusoft.bean.ListenerRegistration;
 import com.doctusoft.bean.ValueChangeListener;
 import com.doctusoft.bean.binding.observable.ObservableValueBinding;
 
-public class OneWayBindingImpl<T> implements BindingRegistration {
+public class OneWayBindingImpl<T> implements ListenerRegistration {
 	
 	private ListenerRegistration sourceListener;
 
@@ -39,8 +39,8 @@ public class OneWayBindingImpl<T> implements BindingRegistration {
 	}
 	
 	@Override
-	public void unbind() {
-		sourceListener.removeHandler();
+	public void remove() {
+		sourceListener.remove();
 	}
 
 }

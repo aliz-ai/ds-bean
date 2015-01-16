@@ -47,7 +47,7 @@ public class ObservableAttributeCompositeValueBinding<Source, Target> extends Ob
 			public void valueChanged(Source value) {
 				// remove the listener on the previous Source value
 				if (sourceValueHandler != null) {
-					sourceValueHandler.removeHandler();
+					sourceValueHandler.remove();
 					sourceValueHandler = null;
 				}
 				// bind to the new Source.attribute change

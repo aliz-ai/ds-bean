@@ -28,7 +28,6 @@ import lombok.Getter;
 
 import com.doctusoft.bean.ListenerRegistration;
 import com.doctusoft.bean.ValueChangeListener;
-import com.doctusoft.bean.binding.BindingRegistration;
 import com.doctusoft.bean.binding.observable.ObservableList.ListElementInsertedListener;
 import com.doctusoft.bean.binding.observable.ObservableList.ListElementRemovedListener;
 
@@ -36,7 +35,7 @@ import com.doctusoft.bean.binding.observable.ObservableList.ListElementRemovedLi
  * Normally delegates inserted and removed events to the methods you implement, but if the entire list instance changes
  * it translates the change to series of inserted and removed events
  */
-public abstract class ListBindingListener<T> implements Serializable, BindingRegistration {
+public abstract class ListBindingListener<T> implements Serializable, ListenerRegistration {
 	
 	private ListenerRegistration insertListener;
 	private ListenerRegistration deleteListener;
@@ -96,11 +95,11 @@ public abstract class ListBindingListener<T> implements Serializable, BindingReg
 
 	private void removeListListeners() {
 		if (insertListener != null) {
-			insertListener.removeHandler();
+			insertListener.remove();
 			insertListener = null;
 		}
 		if (deleteListener != null) {
-			deleteListener.removeHandler();
+			deleteListener.remove();
 			deleteListener = null;
 		}
 	}
@@ -108,19 +107,15 @@ public abstract class ListBindingListener<T> implements Serializable, BindingReg
 	/**
 	 * Unregisters all listeners and breaks the binding
 	 */
+	@Override
 	public void remove() {
 		removeListListeners();
 		if (listReplacedListener != null) {
-			listReplacedListener.removeHandler();
+			listReplacedListener.remove();
 			listReplacedListener = null;
 		}
 	}
 	
-	@Override
-	public void unbind() {
-		remove();
-	}
-
 	public abstract void inserted(ObservableList<T> list, int index, T element);
 	
 	public abstract void removed(ObservableList<T> list, int index, T element);

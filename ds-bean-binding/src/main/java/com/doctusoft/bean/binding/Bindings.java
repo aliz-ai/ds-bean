@@ -21,6 +21,7 @@ package com.doctusoft.bean.binding;
  */
 
 
+import com.doctusoft.bean.ListenerRegistration;
 import com.doctusoft.bean.ParametricObjectMethodReferences.ObjectMethodReference1;
 import com.doctusoft.bean.binding.observable.ObservableChainedValueBindingBuilder;
 import com.doctusoft.bean.binding.observable.ObservableValueBinding;
@@ -57,7 +58,7 @@ public class Bindings {
 	 * 
 	 * @return a {@link BindingRegistration} that can be used to unbind (remove propagating change listeners), if necessary
 	 */
-	public static <T> BindingRegistration bind(final ValueBinding<T> sourceBinding, final ValueBinding<T> targetBinding) {
+	public static <T> ListenerRegistration bind(final ValueBinding<T> sourceBinding, final ValueBinding<T> targetBinding) {
 		if (sourceBinding instanceof ObservableValueBinding<?> && !(targetBinding instanceof ObservableValueBinding<?>)) {
 			// set current value
 			targetBinding.setValue(sourceBinding.getValue());
@@ -68,9 +69,9 @@ public class Bindings {
 			return new TwoWayBindingImpl<T>((ObservableValueBinding<T>) sourceBinding, (ObservableValueBinding<T>) targetBinding);
 		}
 		// return an empty registration by default
-		return new BindingRegistration() {
+		return new ListenerRegistration() {
 			@Override
-			public void unbind() {
+			public void remove() {
 				// do nothing
 			}
 		};

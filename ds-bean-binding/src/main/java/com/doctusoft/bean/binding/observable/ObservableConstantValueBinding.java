@@ -50,7 +50,7 @@ public class ObservableConstantValueBinding<Root> implements ObservableValueBind
 		// do nothing, it's never invoked
 		return new ListenerRegistration() {
 			@Override
-			public void removeHandler() {
+			public void remove() {
 				// do nothing
 			}
 		};

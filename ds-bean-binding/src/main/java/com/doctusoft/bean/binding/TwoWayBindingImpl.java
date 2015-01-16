@@ -25,7 +25,7 @@ import com.doctusoft.bean.ListenerRegistration;
 import com.doctusoft.bean.ValueChangeListener;
 import com.doctusoft.bean.binding.observable.ObservableValueBinding;
 
-public class TwoWayBindingImpl<T> implements BindingRegistration {
+public class TwoWayBindingImpl<T> implements ListenerRegistration {
 
 	private ListenerRegistration sourceListener;
 	private ListenerRegistration targetListener;
@@ -80,8 +80,8 @@ public class TwoWayBindingImpl<T> implements BindingRegistration {
 		target.setValue(sourceValueToIgnore);
 	}
 	@Override
-	public void unbind() {
-		sourceListener.removeHandler();
-		targetListener.removeHandler();
+	public void remove() {
+		sourceListener.remove();
+		targetListener.remove();
 	}
 }

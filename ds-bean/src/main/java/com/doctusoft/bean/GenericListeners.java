@@ -37,7 +37,7 @@ public class GenericListeners<Listener> implements Serializable {
 		class GenericListenerRegistration implements ListenerRegistration {
 			
 			@Override
-			public void removeHandler() {
+			public void remove() {
 				listeners.remove(listener);
 			}
 		};

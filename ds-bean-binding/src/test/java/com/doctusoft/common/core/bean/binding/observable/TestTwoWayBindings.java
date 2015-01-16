@@ -29,8 +29,8 @@ import java.util.Date;
 
 import org.junit.Test;
 
+import com.doctusoft.bean.ListenerRegistration;
 import com.doctusoft.bean.ValueChangeListener;
-import com.doctusoft.bean.binding.BindingRegistration;
 import com.doctusoft.bean.binding.Bindings;
 import com.doctusoft.bean.binding.Converter;
 import com.google.common.base.Strings;
@@ -42,7 +42,7 @@ public class TestTwoWayBindings {
 		TestBean bean1 = new TestBean("abc");
 		TestBean bean2 = new TestBean("123");
 		// bean1 as source, bean2 as target
-		BindingRegistration binding = Bindings.bind(Bindings.obs(bean1).get(TestBean_._stringValue), Bindings.obs(bean2).get(TestBean_._stringValue));
+		ListenerRegistration binding = Bindings.bind(Bindings.obs(bean1).get(TestBean_._stringValue), Bindings.obs(bean2).get(TestBean_._stringValue));
 		// the target is expected to be instantly overwritten
 		assertEquals("abc", bean2.getStringValue());
 		// If bean1 is changed
@@ -54,7 +54,7 @@ public class TestTwoWayBindings {
 		// then bean1 is changed too
 		assertEquals("changed again", bean1.getStringValue());
 		// And after the binding is removed,
-		binding.unbind();
+		binding.remove();
 		// changing both have no effect on the other
 		bean1.setStringValue("bean1");
 		bean2.setStringValue("bean2");
