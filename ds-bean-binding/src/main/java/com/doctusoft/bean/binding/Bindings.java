@@ -71,7 +71,7 @@ public class Bindings {
 		// return an empty registration by default
 		return new ListenerRegistration() {
 			@Override
-			public void remove() {
+			public void removeHandler() {
 				// do nothing
 			}
 		};

@@ -31,7 +31,7 @@ public abstract class AbstractObservingListBinding<T> {
 			@Override
 			public void removed(ObservableList<T> list, int index, T element) {
 				if (listeners.containsKey(element)) {
-					listeners.get(element).remove();
+					listeners.get(element).removeHandler();
 					listeners.remove(element);
 				}
 			}

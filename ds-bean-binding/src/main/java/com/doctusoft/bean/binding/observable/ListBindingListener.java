@@ -95,11 +95,11 @@ public abstract class ListBindingListener<T> implements Serializable, ListenerRe
 
 	private void removeListListeners() {
 		if (insertListener != null) {
-			insertListener.remove();
+			insertListener.removeHandler();
 			insertListener = null;
 		}
 		if (deleteListener != null) {
-			deleteListener.remove();
+			deleteListener.removeHandler();
 			deleteListener = null;
 		}
 	}
@@ -108,10 +108,10 @@ public abstract class ListBindingListener<T> implements Serializable, ListenerRe
 	 * Unregisters all listeners and breaks the binding
 	 */
 	@Override
-	public void remove() {
+	public void removeHandler() {
 		removeListListeners();
 		if (listReplacedListener != null) {
-			listReplacedListener.remove();
+			listReplacedListener.removeHandler();
 			listReplacedListener = null;
 		}
 	}

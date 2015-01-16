@@ -54,7 +54,7 @@ public class TestTwoWayBindings {
 		// then bean1 is changed too
 		assertEquals("changed again", bean1.getStringValue());
 		// And after the binding is removed,
-		binding.remove();
+		binding.removeHandler();
 		// changing both have no effect on the other
 		bean1.setStringValue("bean1");
 		bean2.setStringValue("bean2");

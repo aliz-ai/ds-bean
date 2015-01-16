@@ -46,7 +46,7 @@ public abstract class ObservableCompositeValueBinding<Source, Target> extends Co
 	public ListenerRegistration addValueChangeListener(final ValueChangeListener<Target> listener) {
 		class BindingListenerRegistration implements ListenerRegistration {
 			@Override
-			public void remove() {
+			public void removeHandler() {
 				valueChangeListeners.remove(listener);
 			}
 		}

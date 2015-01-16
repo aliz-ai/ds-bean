@@ -39,8 +39,8 @@ public class OneWayBindingImpl<T> implements ListenerRegistration {
 	}
 	
 	@Override
-	public void remove() {
-		sourceListener.remove();
+	public void removeHandler() {
+		sourceListener.removeHandler();
 	}
 
 }

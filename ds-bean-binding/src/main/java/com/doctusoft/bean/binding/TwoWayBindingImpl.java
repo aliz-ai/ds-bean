@@ -80,8 +80,8 @@ public class TwoWayBindingImpl<T> implements ListenerRegistration {
 		target.setValue(sourceValueToIgnore);
 	}
 	@Override
-	public void remove() {
-		sourceListener.remove();
-		targetListener.remove();
+	public void removeHandler() {
+		sourceListener.removeHandler();
+		targetListener.removeHandler();
 	}
 }

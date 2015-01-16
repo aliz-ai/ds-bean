@@ -25,5 +25,5 @@ import java.io.Serializable;
 
 public interface ListenerRegistration extends Serializable {
 
-	void remove();
+	void removeHandler();
 }
