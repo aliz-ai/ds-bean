@@ -65,6 +65,12 @@ public class Bindings {
 			// listen to changes
 			return new OneWayBindingImpl<T>((ObservableValueBinding<T>) sourceBinding, targetBinding);
 		}
+		if (targetBinding instanceof ObservableValueBinding<?> && !(sourceBinding instanceof ObservableValueBinding<?>)) {
+			// set current value
+			targetBinding.setValue(sourceBinding.getValue());
+			// listen to changes
+			return new OneWayBindingImpl<T>((ObservableValueBinding<T>) targetBinding, sourceBinding);
+		}
 		if (sourceBinding instanceof ObservableValueBinding<?> && (targetBinding instanceof ObservableValueBinding<?>)) {
 			return new TwoWayBindingImpl<T>((ObservableValueBinding<T>) sourceBinding, (ObservableValueBinding<T>) targetBinding);
 		}
