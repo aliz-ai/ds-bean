@@ -24,4 +24,11 @@ public class TestBindings {
 		assertEquals("123", sourceValue);
 	}
 
+	@Test
+	public void testNonObservableBinding() {
+		setSourceValue("abc");
+		Bindings.bind(Bindings.on(this).get(TestBindings_._sourceValue), Bindings.on(this).get(TestBindings_._targetValue));
+		assertEquals("abc", targetValue);
+	}
+
 }

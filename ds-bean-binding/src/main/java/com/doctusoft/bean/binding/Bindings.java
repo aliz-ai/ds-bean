@@ -71,6 +71,10 @@ public class Bindings {
 			// listen to changes
 			return new OneWayBindingImpl<T>((ObservableValueBinding<T>) targetBinding, sourceBinding);
 		}
+		if (!(sourceBinding instanceof ObservableValueBinding<?>) && !(targetBinding instanceof ObservableValueBinding<?>)) {
+			// this case is quite meaningless though, you should just use a setter
+			targetBinding.setValue(sourceBinding.getValue());
+		}
 		if (sourceBinding instanceof ObservableValueBinding<?> && (targetBinding instanceof ObservableValueBinding<?>)) {
 			return new TwoWayBindingImpl<T>((ObservableValueBinding<T>) sourceBinding, (ObservableValueBinding<T>) targetBinding);
 		}
