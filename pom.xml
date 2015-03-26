@@ -2,7 +2,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.doctusoft</groupId>
 	<artifactId>ds-bean-parent</artifactId>
-	<version>0.4.12-SNAPSHOT</version>
+	<version>0.4.11-SNAPSHOT</version>
 	<name>ds-bean-parent</name>
 	<packaging>pom</packaging>
 
